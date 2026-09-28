@@ -38,6 +38,7 @@ alpha_research/
 |--------|--------|-------------|--------|
 | **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Active |
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew & term structure slope | ✅ Active |
+| **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV curve slope (short vs long DTE) as mean-reversion signal | ✅ Active |
 
 ## Alpha Development Workflow
 

@@ -52,11 +52,15 @@ def compute_iv_rank(ticker_str):
         chain = tq.option_chain(target_str)
         df = pd.concat([chain.calls, chain.puts], ignore_index=True)
         
-        # Filter: liquid + valid IV + positive price
+        # Fix dtypes: volume is float64 with NaN, openInterest is int64
+        df['volume'] = df['volume'].fillna(0).astype(int)
+        df['openInterest'] = df['openInterest'].fillna(0).astype(int)
+        
+        # Filter: liquid + valid IV + positive price + reasonable IV (not near-zero)
         df = df[
             ((df['volume'] > 50) | (df['openInterest'] > 500)) &
             (df['impliedVolatility'].notna()) &
-            (df['impliedVolatility'] > 0) &
+            (df['impliedVolatility'] > 0.01) &  # Filter out near-zero IV (bid=ask=0)
             (df['impliedVolatility'] < 3.0) &
             (df['lastPrice'] > 0)
         ].copy()
