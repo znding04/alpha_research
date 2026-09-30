@@ -40,6 +40,7 @@ alpha_research/
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew & term structure slope | ✅ Active |
 | **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV curve slope (short vs long DTE) as mean-reversion signal | ✅ Active |
 | **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² - RV² variance risk premium, cross-sectional equity premium signal | ✅ Active |
+| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | 🔄 Building history |
 
 ## Alpha Development Workflow
 
