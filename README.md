@@ -43,7 +43,8 @@ alpha_research/
 | **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | 🔄 Building history |
 | **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (IV²-RV² term structure) | ✅ Active |
 | **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Building history |
-| **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip = pin risk magnet | ✅ Active |
+|| **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip = pin risk magnet | ✅ Active |
+|| **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic IV smile curvature (butterfly spreads) as jump/tail risk signal | ✅ Active |
 
 ## Alpha Development Workflow
 
