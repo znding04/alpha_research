@@ -45,6 +45,7 @@ alpha_research/
 | **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Building history |
 || **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip = pin risk magnet | ✅ Active |
 || **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic IV smile curvature (butterfly spreads) as jump/tail risk signal | ✅ Active |
+| **VRP Carry / Roll-down** | `alpha_10_vrp_carry/` | VRP term structure carry & roll-down (near VRP - far VRP, daily decay) | ⚠️ Data issue |
 
 ## Alpha Development Workflow
 
