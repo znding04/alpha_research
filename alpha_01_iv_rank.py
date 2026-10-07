@@ -53,8 +53,9 @@ def compute_iv_rank(ticker_str):
         df = pd.concat([chain.calls, chain.puts], ignore_index=True)
         
         # Fix dtypes: volume is float64 with NaN, openInterest is int64
-        df['volume'] = df['volume'].fillna(0).astype(int)
-        df['openInterest'] = df['openInterest'].fillna(0).astype(int)
+        # Comparison works directly on float64; avoid .astype(int) which fails on inf/NaN
+        df['volume'] = df['volume'].fillna(0)
+        df['openInterest'] = df['openInterest'].fillna(0)
         
         # Filter: liquid + valid IV + positive price + reasonable IV (not near-zero)
         df = df[
@@ -68,9 +69,20 @@ def compute_iv_rank(ticker_str):
         if len(df) < 10:
             return None
         
-        atm_idx = (df['strike'] - current_price).abs().idxmin()
-        atm_strike = df.loc[atm_idx]
-        atm_iv = atm_strike['impliedVolatility']
+        # Robust ATM IV: median of strikes within ±2% moneyness with reasonable IV (>5%)
+        moneyness = df['strike'] / current_price
+        atm_candidates = df[(moneyness >= 0.98) & (moneyness <= 1.02) & (df['impliedVolatility'] > 0.05)]
+        
+        if len(atm_candidates) >= 3:
+            atm_iv = atm_candidates['impliedVolatility'].median()
+        else:
+            # Fallback: single closest strike with IV > 0.05
+            valid_strikes = df[df['impliedVolatility'] > 0.05]
+            if len(valid_strikes) == 0:
+                return None
+            atm_idx = (valid_strikes['strike'] - current_price).abs().idxmin()
+            atm_iv = valid_strikes.loc[atm_idx, 'impliedVolatility']
+        
         median_iv = df['impliedVolatility'].median()
         iv_spread = atm_iv - median_iv
         

@@ -47,6 +47,7 @@ alpha_research/
 || **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic IV smile curvature (butterfly spreads) as jump/tail risk signal | ✅ Active |
 | **VRP Carry / Roll-down** | `alpha_10_vrp_carry/` | VRP term structure carry & roll-down (near VRP - far VRP, daily decay) | ⚠️ Data issue |
 | **Vol-of-Vol** | `alpha_11_vol_of_vol/` | Realized vol of ATM IV (20d rolling); regime stability & transition risk signal | 🔄 Building history |
+| **IV Momentum** | `alpha_12_iv_momentum/` | 5-day ATM IV trend (% change); fear spikes vs complacency signal | 🔄 Building history |
 
 ## Alpha Development Workflow
 

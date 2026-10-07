@@ -1,0 +1,122 @@
+{
+  "AAPL": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 333.63,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 333.63,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 333.63,
+      "expiration": "2026-10-16"
+    }
+  ],
+  "SPY": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 779.09,
+      "expiration": "2026-10-15"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 779.09,
+      "expiration": "2026-10-15"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 779.09,
+      "expiration": "2026-10-15"
+    }
+  ],
+  "QQQ": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 759.66,
+      "expiration": "2026-10-15"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 759.66,
+      "expiration": "2026-10-15"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 759.66,
+      "expiration": "2026-10-15"
+    }
+  ],
+  "MSFT": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 529.3,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 529.3,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 529.3,
+      "expiration": "2026-10-16"
+    }
+  ],
+  "GOOGL": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 347.68,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 347.68,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 347.68,
+      "expiration": "2026-10-16"
+    }
+  ],
+  "AMZN": [
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 256.29,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 256.29,
+      "expiration": "2026-10-16"
+    },
+    {
+      "date": "2026-10-07",
+      "atm_iv": 0.062509375,
+      "current_price": 256.29,
+      "expiration": "2026-10-16"
+    }
+  ]
+}
