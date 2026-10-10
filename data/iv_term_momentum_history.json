@@ -1,0 +1,80 @@
+{
+  "AAPL": [
+    {
+      "timestamp": "2026-10-10T02:07:07.401316",
+      "ticker": "AAPL",
+      "current_price": 336.64,
+      "near_atm_iv": 0.1595,
+      "far_atm_iv": 0.2596,
+      "near_dte": 1,
+      "far_dte": 159,
+      "term_slope": 0.000633,
+      "n_expirations": 12
+    }
+  ],
+  "SPY": [
+    {
+      "timestamp": "2026-10-10T02:07:10.642662",
+      "ticker": "SPY",
+      "current_price": 778.57,
+      "near_atm_iv": 0.055,
+      "far_atm_iv": 0.1538,
+      "near_dte": 1,
+      "far_dte": 171,
+      "term_slope": 0.000581,
+      "n_expirations": 18
+    }
+  ],
+  "QQQ": [
+    {
+      "timestamp": "2026-10-10T02:07:13.628976",
+      "ticker": "QQQ",
+      "current_price": 751.27,
+      "near_atm_iv": 0.0871,
+      "far_atm_iv": 0.2131,
+      "near_dte": 1,
+      "far_dte": 171,
+      "term_slope": 0.000741,
+      "n_expirations": 17
+    }
+  ],
+  "MSFT": [
+    {
+      "timestamp": "2026-10-10T02:07:15.430009",
+      "ticker": "MSFT",
+      "current_price": 535.07,
+      "near_atm_iv": 0.1697,
+      "far_atm_iv": 0.3025,
+      "near_dte": 1,
+      "far_dte": 159,
+      "term_slope": 0.00084,
+      "n_expirations": 11
+    }
+  ],
+  "GOOGL": [
+    {
+      "timestamp": "2026-10-10T02:07:17.468763",
+      "ticker": "GOOGL",
+      "current_price": 351.66,
+      "near_atm_iv": 0.208,
+      "far_atm_iv": 0.3433,
+      "near_dte": 1,
+      "far_dte": 159,
+      "term_slope": 0.000857,
+      "n_expirations": 12
+    }
+  ],
+  "AMZN": [
+    {
+      "timestamp": "2026-10-10T02:07:19.254931",
+      "ticker": "AMZN",
+      "current_price": 262.43,
+      "near_atm_iv": 0.1807,
+      "far_atm_iv": 0.3593,
+      "near_dte": 1,
+      "far_dte": 159,
+      "term_slope": 0.00113,
+      "n_expirations": 12
+    }
+  ]
+}

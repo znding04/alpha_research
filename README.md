@@ -39,17 +39,18 @@ alpha_research/
 | **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Active |
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew & term structure slope | ✅ Active |
 | **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV curve slope (short vs long DTE) as mean-reversion signal | ✅ Active |
-| **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² - RV² variance risk premium, cross-sectional equity premium signal | ✅ Active |
-| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | 🔄 Building history |
-| **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (IV²-RV² term structure) | ✅ Active |
-| **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Building history |
+|| **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² - RV² variance risk premium, cross-sectional equity premium signal | ✅ Active |
+|| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | 🔄 Building history |
+|| **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (IV²-RV² term structure) | ✅ Active |
+|| **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Building history |
 || **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip = pin risk magnet | ✅ Active |
 || **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic IV smile curvature (butterfly spreads) as jump/tail risk signal | ✅ Active |
-| **VRP Carry / Roll-down** | `alpha_10_vrp_carry/` | VRP term structure carry & roll-down (near VRP - far VRP, daily decay) | ⚠️ Data issue |
-| **Vol-of-Vol** | `alpha_11_vol_of_vol/` | Realized vol of ATM IV (20d rolling); regime stability & transition risk signal | 🔄 Building history |
-| **IV Momentum** | `alpha_12_iv_momentum/` | 5-day ATM IV trend (% change); fear spikes vs complacency signal | 🔄 Building history |
-| **IV Skew Momentum** | `alpha_13_iv_skew_momentum/` | 5-day rate of change of 25-delta put-call skew; fear acceleration vs complacency signal | 🔄 Building history |
-| **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios; positioning & hedging demand signal | ✅ Active |
+|| **VRP Carry / Roll-down** | `alpha_10_vrp_carry/` | VRP term structure carry & roll-down (near VRP - far VRP, daily decay) | ⚠️ Data issue |
+|| **Vol-of-Vol** | `alpha_11_vol_of_vol/` | Realized vol of ATM IV (20d rolling); regime stability & transition risk signal | 🔄 Building history |
+|| **IV Momentum** | `alpha_12_iv_momentum/` | 5-day ATM IV trend (% change); fear spikes vs complacency signal | 🔄 Building history |
+|| **IV Skew Momentum** | `alpha_13_iv_skew_momentum/` | 5-day rate of change of 25-delta put-call skew; fear acceleration vs complacency signal | 🔄 Building history |
+|| **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios; positioning & hedging demand signal | ✅ Active |
+|| **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope; regime transition & fear acceleration signal | 🔄 Building history |
 
 ## Alpha Development Workflow
 
