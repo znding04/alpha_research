@@ -52,6 +52,7 @@ alpha_research/
 | **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios; positioning & hedging demand signal | ✅ Active |
 | **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope; regime transition & fear acceleration signal | 🔄 Building history |
 | **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Butterfly skew convexity (tail IV curvature) as fat-tail risk & mean-reversion signal | ✅ Active |
+| **IV Calendar Spread** | `alpha_17_iv_calendar_spread/` | ATM IV spread between nearby expirations (30d vs 60d) as mean-reversion signal | 🔄 Building history |
 
 ## Alpha Development Workflow
 
