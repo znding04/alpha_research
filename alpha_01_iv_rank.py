@@ -52,8 +52,8 @@ def compute_iv_rank(ticker_str):
         chain = tq.option_chain(target_str)
         df = pd.concat([chain.calls, chain.puts], ignore_index=True)
         
-        # Fix dtypes: volume is float64 with NaN, openInterest is int64
-        # Comparison works directly on float64; avoid .astype(int) which fails on inf/NaN
+        # Fix dtypes: both volume and openInterest are float64 with NaN (not int64)
+        # Comparison works directly on float64 after fillna; avoid .astype(int) which fails on NaN/inf
         df['volume'] = df['volume'].fillna(0)
         df['openInterest'] = df['openInterest'].fillna(0)
         
