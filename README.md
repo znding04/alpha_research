@@ -54,6 +54,7 @@ alpha_research/
 | **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Butterfly skew convexity (tail IV curvature) as fat-tail risk & mean-reversion signal | ✅ Active |
 | **IV Calendar Spread** | `alpha_17_iv_calendar_spread/` | ATM IV spread between nearby expirations (30d vs 60d) as mean-reversion signal | 🔄 Building history |
 | **VRP Momentum** | `alpha_18_vrp_momentum/` | Rate of change of Variance Risk Premium (IV²-RV²) across term structure; fear acceleration & mean-reversion signal | ✅ Active |
+| **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd moment (skewness) of IV smile across strikes; risk-neutral skewness & tail risk signal | ✅ Active |
 
 ## Alpha Development Workflow
 
