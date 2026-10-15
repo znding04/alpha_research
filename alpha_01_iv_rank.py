@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Compute IV Rank alpha signal for a watchlist of tickers."""
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, "/Users/znding04/Work/alpha_research")
 
 import warnings
 warnings.filterwarnings('ignore')
