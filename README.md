@@ -40,7 +40,7 @@ alpha_research/
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew & term structure slope | ✅ Active |
 | **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV curve slope (short vs long DTE) as mean-reversion signal | ✅ Active |
 | **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² - RV² variance risk premium, cross-sectional equity premium signal | ✅ Active |
-| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | 🔄 Building history |
+| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | ✅ Active (alpha_05) / ✅ Completed (alpha_21) |
 | **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (IV²-RV² term structure) | ✅ Active |
 | **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Building history |
 | **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip = pin risk magnet | ✅ Active |
@@ -56,6 +56,7 @@ alpha_research/
 | **VRP Momentum** | `alpha_18_vrp_momentum/` | Rate of change of Variance Risk Premium (IV²-RV²) across term structure; fear acceleration & mean-reversion signal | ✅ Active |
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd moment (skewness) of IV smile across strikes; risk-neutral skewness & tail risk signal | ✅ Active |
 | **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²-RV² asymmetry); crash hedging premium vs. call overwriting signal | 🔄 Building history |
+| **IV Rank Percentile (Complete)** | `alpha_21_iv_percentile/` | Full 1-year synthetic-history IV percentile + cross-sectional ranking + IC testing | ✅ Active |
 
 ## Alpha Development Workflow
 
