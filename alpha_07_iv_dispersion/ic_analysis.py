@@ -6,6 +6,8 @@ Requires historical dispersion data (run main.py daily to build history).
 """
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
 
 import warnings
@@ -17,7 +19,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import json
 
-from common.utils import compute_ic, compute_signal_metrics
+from common.utils import compute_ic, compute_signal_metrics, forward_return
 
 
 HISTORY_PATH = "data/iv_dispersion_history.json"
@@ -41,18 +43,9 @@ def save_dispersion_history(history):
 
 
 def compute_forward_returns(ticker, start_date, horizon_days=5):
-    """Compute forward returns from start_date."""
-    try:
-        tq = yf.Ticker(ticker)
-        hist = tq.history(period="60d")
-        if len(hist) < horizon_days + 5:
-            return np.nan
-        close = hist['Close']
-        start_price = close.loc[start_date] if start_date in close.index else close.iloc[0]
-        end_price = close.iloc[-1]
-        return np.log(end_price / start_price) if start_price > 0 else np.nan
-    except Exception:
-        return np.nan
+    """Log return over the `horizon_days` trading days AFTER start_date (NaN if not yet available)."""
+    ret = forward_return(ticker, start_date, horizon_days)
+    return float(np.log1p(ret)) if pd.notna(ret) else np.nan
 
 
 def update_history_with_returns(history):
@@ -70,8 +63,11 @@ def update_history_with_returns(history):
                 continue
 
             # Compute 5-day forward return if not already present
-            if 'fwd_ret_5d' not in entry:
-                entry['fwd_ret_5d'] = compute_forward_returns(index, entry['date'], 5)
+            # (retry entries whose window wasn't complete on earlier runs)
+            if pd.isna(entry.get('fwd_ret_5d', np.nan)):
+                ret = compute_forward_returns(index, entry['date'], 5)
+                if pd.notna(ret):
+                    entry['fwd_ret_5d'] = ret
 
             updated_entries.append(entry)
 

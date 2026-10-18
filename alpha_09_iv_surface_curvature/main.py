@@ -22,6 +22,11 @@ import yfinance as yf
 from datetime import datetime, timedelta
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+TARGET_DTE = 30
+Z_25D = 0.6745  # N^-1(0.75): 25-delta strike sits ~0.674·σ√T from ATM in log-moneyness
+# Regime thresholds on butterfly_25d / ATM IV (relative wing premium)
+# Provisional (typical 30d single-name/index range ~1-2.5%); recalibrate from history
+HIGH_CURV, LOW_CURV = 0.025, 0.010
 
 
 def fit_iv_smile(chain_df, current_price, option_type='call'):
@@ -89,7 +94,7 @@ def fit_iv_smile(chain_df, current_price, option_type='call'):
         return None
 
 
-def compute_butterfly_metrics(ticker_str, max_dte=45):
+def compute_butterfly_metrics(ticker_str, max_dte=60):
     """
     Compute smile curvature using butterfly spreads.
     
@@ -113,7 +118,7 @@ def compute_butterfly_metrics(ticker_str, max_dte=45):
         for e in expirations:
             try:
                 d = datetime.strptime(e, "%Y-%m-%d")
-                dte = (d - now).days
+                dte = (d.date() - now.date()).days
                 if 7 <= dte <= max_dte:  # Skip very short DTE (< 1 week)
                     valid_exps.append((d, dte))
             except ValueError:
@@ -123,50 +128,37 @@ def compute_butterfly_metrics(ticker_str, max_dte=45):
         if not valid_exps:
             return None
         
-        # Use nearest liquid expiration (typically 2-6 weeks)
-        target_exp, dte = valid_exps[0]
+        # Use expiration closest to ~30 DTE (short tenors give noisy, steep smiles)
+        target_exp, dte = min(valid_exps, key=lambda x: abs(x[1] - TARGET_DTE))
         target_str = target_exp.strftime("%Y-%m-%d")
         
         chain = tq.option_chain(target_str)
         
-        # Fit smiles for calls and puts separately
-        call_fit = fit_iv_smile(chain.calls, current_price, 'call')
-        put_fit = fit_iv_smile(chain.puts, current_price, 'put')
-        
-        if call_fit is None and put_fit is None:
+        # Fit one smile on OTM options only (puts K < S, calls K >= S).
+        # ITM IVs are noisy (wide quotes, early exercise) and inflated the curvature.
+        otm = pd.concat([
+            chain.puts[chain.puts['strike'] < current_price],
+            chain.calls[chain.calls['strike'] >= current_price],
+        ], ignore_index=True)
+        otm = otm[otm['bid'].fillna(0) > 0]
+        fit = fit_iv_smile(otm, current_price, 'otm')
+        if fit is None:
             return None
-        
-        # Combine call and put curvature (average if both available)
-        if call_fit and put_fit:
-            curvature = (call_fit['curvature'] + put_fit['curvature']) / 2
-            skew = (call_fit['skew'] + put_fit['skew']) / 2
-            atm_iv = (call_fit['atm_iv'] + put_fit['atm_iv']) / 2
-            r2 = (call_fit['r2'] + put_fit['r2']) / 2
-            n_points = call_fit['n_points'] + put_fit['n_points']
-        elif call_fit:
-            curvature = call_fit['curvature']
-            skew = call_fit['skew']
-            atm_iv = call_fit['atm_iv']
-            r2 = call_fit['r2']
-            n_points = call_fit['n_points']
-        else:
-            curvature = put_fit['curvature']
-            skew = put_fit['skew']
-            atm_iv = put_fit['atm_iv']
-            r2 = put_fit['r2']
-            n_points = put_fit['n_points']
-        
+        curvature, skew, atm_iv = fit['curvature'], fit['skew'], fit['atm_iv']
+        r2, n_points = fit['r2'], fit['n_points']
+        call_fit = put_fit = None
+
         # Normalize curvature by ATM IV (dimensionless, comparable across tickers)
         # Curvature has units of IV/moneyness^2, divide by ATM IV
         normalized_curvature = curvature / atm_iv if atm_iv > 0 else 0
         
-        # Also compute explicit butterfly at ATM
-        # Butterfly ≈ 0.5 * curvature * (dK)^2 where dK is strike spacing
-        # In moneyness space: butterfly ≈ curvature * (Δm)^2
-        # Typical Δm for 25-delta ≈ 0.15 (log(1.05) ≈ 0.05, log(0.95) ≈ -0.05)
-        # So butterfly_25d ≈ curvature * 0.15^2 = curvature * 0.0225
-        butterfly_25d = curvature * 0.0225
-        
+        # 25-delta butterfly from the quadratic fit:
+        #   (IV(+m) + IV(-m))/2 - IV(0) = c * m^2,  m = Z_25D * σ_ATM * sqrt(T)
+        # Units: IV (decimal), e.g. 0.01 = 1 vol point.
+        m_25d = Z_25D * atm_iv * np.sqrt(dte / 365.0)
+        butterfly_25d = curvature * m_25d ** 2
+        rel_butterfly = butterfly_25d / atm_iv if atm_iv > 0 else 0
+
         return {
             'ticker': ticker_str,
             'current_price': round(current_price, 2),
@@ -176,6 +168,7 @@ def compute_butterfly_metrics(ticker_str, max_dte=45):
             'curvature': round(curvature, 6),
             'normalized_curvature': round(normalized_curvature, 6),
             'butterfly_25d': round(butterfly_25d, 6),
+            'rel_butterfly': round(rel_butterfly, 4),
             'r2': round(r2, 4),
             'n_points': n_points,
             'call_fit': call_fit,
@@ -203,13 +196,13 @@ if __name__ == "__main__":
     
     # Print summary
     for r in results:
-        curv_sign = "📈 High Curvature" if r['normalized_curvature'] > 0.1 else ("📉 Low Curvature" if r['normalized_curvature'] < 0.02 else "➖ Normal")
+        curv_sign = "📈 High Curvature" if r['rel_butterfly'] > HIGH_CURV else ("📉 Low Curvature" if r['rel_butterfly'] < LOW_CURV else "➖ Normal")
         print(f"\n{r['ticker']} (${r['current_price']}, {r['dte']} DTE):")
         print(f"  ATM IV:              {r['atm_iv']:.4f}")
         print(f"  Skew (linear):       {r['skew']:.4f}")
         print(f"  Curvature (raw):     {r['curvature']:.6f}")
-        print(f"  Norm. Curvature:     {r['normalized_curvature']:.6f}  ({curv_sign})")
-        print(f"  Butterfly (25d):     {r['butterfly_25d']:.6f}")
+        print(f"  Norm. Curvature:     {r['normalized_curvature']:.6f}")
+        print(f"  Butterfly (25d):     {r['butterfly_25d']:.6f}  (rel. {r['rel_butterfly']:.4f}, {curv_sign})")
         print(f"  Fit R²:              {r['r2']:.4f}")
         print(f"  Points used:         {r['n_points']}")
     
@@ -229,6 +222,7 @@ if __name__ == "__main__":
             'curvature': r['curvature'],
             'normalized_curvature': r['normalized_curvature'],
             'butterfly_25d': r['butterfly_25d'],
+            'rel_butterfly': r['rel_butterfly'],
             'r2': r['r2'],
             'n_points': r['n_points'],
         })

@@ -23,6 +23,28 @@ from datetime import datetime, timedelta
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
 
 
+def bs_gamma(S, K, T, sigma):
+    """Black-Scholes gamma (r = q = 0); vectorised over S."""
+    d1 = (np.log(S / K) + 0.5 * sigma**2 * T) / (sigma * np.sqrt(T))
+    pdf = np.exp(-0.5 * d1**2) / np.sqrt(2 * np.pi)
+    return pdf / (S * sigma * np.sqrt(T))
+
+
+def find_zero_gamma(contracts, spot, width=0.20, n=401):
+    """Spot level nearest current spot where total dealer GEX crosses zero (None if no crossing)."""
+    if not contracts:
+        return None
+    K, T, sig, oi, sign = (np.array(c, dtype=float) for c in zip(*contracts))
+    grid = np.linspace(spot * (1 - width), spot * (1 + width), n)
+    gex = np.array([(sign * bs_gamma(s, K, T, sig) * oi * 100 * s**2 * 0.01).sum() for s in grid])
+    crossings = np.where(np.sign(gex[:-1]) != np.sign(gex[1:]))[0]
+    if len(crossings) == 0:
+        return None
+    # Linear interpolation at each crossing; keep the one closest to spot
+    levels = [grid[i] - gex[i] * (grid[i + 1] - grid[i]) / (gex[i + 1] - gex[i]) for i in crossings]
+    return float(min(levels, key=lambda x: abs(x - spot)))
+
+
 def compute_gamma_exposure(ticker_str, max_dte=45):
     """Compute GEX metrics for a single ticker from option chain open interest."""
     try:
@@ -55,7 +77,7 @@ def compute_gamma_exposure(ticker_str, max_dte=45):
         total_gex = 0.0
         gex_by_strike = {}
         gex_by_dte = {}
-        strike_prices = set()
+        contracts = []  # (strike, T, sigma, oi, sign) for the zero-gamma spot sweep
 
         for exp_date, dte in valid_exps:
             exp_str = exp_date.strftime("%Y-%m-%d")
@@ -64,63 +86,40 @@ def compute_gamma_exposure(ticker_str, max_dte=45):
                 calls = chain.calls
                 puts = chain.puts
 
-                # Filter liquid options
-                for df, opt_type in [(calls, 'call'), (puts, 'put')]:
+                # Standard dealer convention (SqueezeMetrics-style): customers sell calls
+                # (overwriting) and buy puts (hedging), so dealers are LONG call gamma and
+                # SHORT put gamma → call GEX positive, put GEX negative.
+                for df, sign in [(calls, 1.0), (puts, -1.0)]:
                     df = df.copy()
                     df['volume'] = df['volume'].fillna(0).astype(int)
                     df['openInterest'] = df['openInterest'].fillna(0).astype(int)
 
                     liquid = df[
-                        (df['volume'] > 10) | (df['openInterest'] > 100)
+                        ((df['volume'] > 10) | (df['openInterest'] > 100)) &
+                        (df['openInterest'] > 0)
                     ].copy()
 
                     if len(liquid) == 0:
                         continue
 
-                    # Gamma = OI * contract_size * gamma_per_contract
-                    # yfinance provides 'gamma' but it may be NaN; compute approximation
-                    # Gamma ≈ (normal_pdf(d1)) / (S * sigma * sqrt(T))
-                    # For approximation: use provided gamma if available, else estimate
-
+                    # Calendar time to expiry (DTE counts calendar days)
+                    T = dte / 365.0
                     for _, row in liquid.iterrows():
                         strike = row['strike']
                         oi = row['openInterest']
-                        gamma = row.get('gamma', np.nan)
+                        sigma = row.get('impliedVolatility', np.nan)
+                        # yfinance has no gamma column; skip placeholder IVs (after-hours / 0-DTE)
+                        if pd.isna(sigma) or sigma < 0.05 or sigma > 3.0:
+                            continue
 
-                        if pd.isna(gamma) or gamma <= 0:
-                            # Estimate gamma using Black-Scholes approximation
-                            S = current_price
-                            K = strike
-                            T = dte / 252.0  # trading days
-                            sigma = row.get('impliedVolatility', 0.2)
-                            if pd.isna(sigma) or sigma <= 0:
-                                sigma = 0.2
-
-                            # d1 = (ln(S/K) + (r + 0.5*sigma^2)*T) / (sigma*sqrt(T))
-                            # Assume r=0 for simplicity
-                            if T <= 0:
-                                continue
-                            d1 = (np.log(S / K) + 0.5 * sigma**2 * T) / (sigma * np.sqrt(T))
-                            # Standard normal PDF
-                            pdf = np.exp(-0.5 * d1**2) / np.sqrt(2 * np.pi)
-                            # Gamma = pdf / (S * sigma * sqrt(T))
-                            gamma = pdf / (S * sigma * np.sqrt(T))
-
-                        # GEX = OI * 100 * gamma * S^2 (dollar gamma per 1% move)
-                        # Standard convention: GEX = OI * contract_size * gamma * S^2 / 100
-                        contract_size = 100
-                        gex = oi * contract_size * gamma * (current_price ** 2) / 100
-
-                        # Calls: positive gamma (MMs long gamma if they sold calls)
-                        # Puts: positive gamma (MMs long gamma if they sold puts)
-                        # But OI is from buyer perspective; MMs are typically short
-                        # Convention: Dealer GEX = -1 * OI * gamma * 100 * S^2 / 100
-                        dealer_gex = -gex
+                        gamma = bs_gamma(current_price, strike, T, sigma)
+                        # GEX = gamma × OI × 100 × S² × 0.01 → dealer $ delta change per 1% spot move
+                        dealer_gex = sign * gamma * oi * 100 * current_price ** 2 * 0.01
 
                         total_gex += dealer_gex
                         gex_by_strike[strike] = gex_by_strike.get(strike, 0) + dealer_gex
                         gex_by_dte[dte] = gex_by_dte.get(dte, 0) + dealer_gex
-                        strike_prices.add(strike)
+                        contracts.append((strike, T, sigma, oi, sign))
 
             except Exception:
                 continue
@@ -128,31 +127,21 @@ def compute_gamma_exposure(ticker_str, max_dte=45):
         if not gex_by_strike:
             return None
 
-        # Find zero-gamma flip point (strike where cumulative GEX crosses zero)
-        sorted_strikes = sorted(gex_by_strike.keys())
-        cumulative = 0
-        flip_strike = None
-        for k in sorted_strikes:
-            cumulative += gex_by_strike[k]
-            if cumulative >= 0 and flip_strike is None:
-                flip_strike = k
-                break
+        # Zero-gamma flip: spot level where total dealer GEX changes sign,
+        # recomputing every contract's gamma at hypothetical spots (±20%).
+        flip_strike = find_zero_gamma(contracts, current_price)
 
         # Gamma at ATM
         atm_strike = min(gex_by_strike.keys(), key=lambda x: abs(x - current_price))
         atm_gex = gex_by_strike[atm_strike]
 
-        # GEX per 1% move (normalized)
-        gex_per_pct = total_gex / 100  # already in $ per 1% by convention
-
         return {
             'ticker': ticker_str,
             'current_price': round(current_price, 2),
             'total_gex': round(total_gex, 0),  # $ per 1% spot move
-            'gex_per_pct': round(gex_per_pct, 0),
             'atm_strike': atm_strike,
             'atm_gex': round(atm_gex, 0),
-            'flip_strike': flip_strike,
+            'flip_strike': round(flip_strike, 2) if flip_strike else None,
             'distance_to_flip_pct': round((flip_strike - current_price) / current_price * 100, 2) if flip_strike else np.nan,
             'n_expirations': len(valid_exps),
             'gex_by_strike': {str(k): round(v, 0) for k, v in sorted(gex_by_strike.items())},
@@ -186,7 +175,7 @@ if __name__ == "__main__":
         print(f"\n{r['ticker']} (${r['current_price']}):")
         print(f"  Total GEX ($/1%):    {r['total_gex']:,.0f}  ({gex_sign})")
         print(f"  ATM Strike GEX:      {r['atm_gex']:,.0f}")
-        print(f"  Zero-Gamma Flip:     ${flip:.0f} ({dist:+.2f}%)" if flip else "  Zero-Gamma Flip:     N/A")
+        print(f"  Zero-Gamma Flip:     ${flip:.2f} ({dist:+.2f}%)" if flip else "  Zero-Gamma Flip:     none within ±20%")
         print(f"  Expirations used:    {r['n_expirations']}")
 
     # Save detailed data

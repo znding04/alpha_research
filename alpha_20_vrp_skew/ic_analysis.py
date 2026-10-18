@@ -131,6 +131,8 @@ def build_history(days=60):
     print(f"Building {days}-day history for VRP Skew...")
     print("WARNING: yfinance only provides current option chain.")
     print("For real backtesting, historical option data is required.")
+    print("⚠️ SYNTHETIC — not evidence: today's signal is back-filled onto past dates (+ noise),")
+    print("   which is look-ahead. Any IC below is a pipeline demo only.")
     
     # Create synthetic history from current values (for demo only)
     dates = pd.date_range(end=datetime.now(), periods=days, freq='B')
@@ -218,7 +220,7 @@ if __name__ == "__main__":
         exit(0)
     
     ic_series = pd.Series(dict(ic_by_date), name='ic')
-    print(f"\n📈 IC Statistics ({len(ic_series)} observations):")
+    print(f"\n📈 IC Statistics — SYNTHETIC, not evidence ({len(ic_series)} observations):")
     print(f"  Mean IC:   {ic_series.mean():.4f}")
     print(f"  Std IC:    {ic_series.std():.4f}")
     print(f"  IR:        {ic_series.mean() / ic_series.std() if ic_series.std() > 0 else np.nan:.4f}")

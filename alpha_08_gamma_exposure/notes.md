@@ -59,22 +59,23 @@
 
 ### GEX Calculation
 ```
-Dealer GEX = -1 × OI × Contract_Size × Gamma × Spot² / 100
+Dealer GEX = sign × OI × 100 × Gamma × Spot² × 0.01      (sign = +1 calls, −1 puts)
 ```
-- Negative sign: Dealers are typically net short options (sold to customers)
-- Contract_Size = 100 (US equity options)
-- Gamma: per-contract gamma from option chain
-- Division by 100: Converts to $ per 1% spot move (standard convention)
+- Sign: standard (SqueezeMetrics-style) convention — customers sell calls / buy puts, so dealers are **long call gamma, short put gamma**
+- Contract size = 100 (US equity options); × Spot² × 0.01 → dealer $ delta change per 1% spot move
+- Contracts with placeholder IVs (< 5%, e.g. after-hours/0-DTE 0.0156/0.0625) are skipped
 
-### Gamma Approximation (when yfinance gamma is NaN)
+### Gamma (Black-Scholes; yfinance has no gamma column)
 ```
 d1 = (ln(S/K) + 0.5 × σ² × T) / (σ × √T)
 Gamma = φ(d1) / (S × σ × √T)
 ```
-Where φ is standard normal PDF, T in trading years (DTE/252), r ≈ 0.
+φ = standard normal PDF, σ = yfinance IV, T = calendar DTE / 365, r = q = 0.
 
-### Flip Strike Calculation
-Sort strikes by price, compute cumulative GEX. Flip strike = first strike where cumulative ≥ 0.
+### Zero-Gamma Flip
+Recompute every contract's gamma at hypothetical spots on a ±20% grid around spot and find where total dealer GEX changes sign (linear interpolation; nearest crossing to spot). Reported as a spot level, not a listed strike.
+
+**Fix (2026-10-18):** the original code applied `dealer_gex = -gex` to calls *and* puts (every strike negative, no flip ever found), used `T = DTE/252` on calendar days, and defined the flip as the first strike where cumulative-by-strike GEX ≥ 0, which isn't the zero-gamma level.
 
 ### Known Limitations
 1. **No historical option chains** from yfinance — requires daily snapshots stored externally
@@ -86,18 +87,21 @@ Sort strikes by price, compute cumulative GEX. Flip strike = first strike where 
 
 ## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | Total Dealer GEX ($/1%) | ATM Strike GEX | Zero-Gamma Flip | Expirations |
-|--------|-------|-------------------------|----------------|-----------------|-------------|
-| AAPL   | 343.46 | -1.05e9 | -2.64e7 | N/A | 9 |
-| SPY    | 763.25 | -2.08e10 | -2.15e8 | N/A | 13 |
-| QQQ    | 709.80 | -1.10e10 | -6.79e8 | N/A | 13 |
-| MSFT   | 529.05 | -1.04e9 | -7.14e7 | N/A | 8 |
-| GOOGL  | 340.59 | -5.38e8 | -4.15e7 | N/A | 8 |
-| AMZN   | 250.00 | -6.36e8 | -6.98e7 | N/A | 9 |
+| Ticker | Price | Total Dealer GEX ($/1%) | Regime | ATM Strike GEX | Zero-Gamma Flip | Distance | Expirations |
+|--------|-------|-------------------------|--------|----------------|-----------------|----------|-------------|
+| AAPL   | 343.46 | +2.68e8 | Long gamma | -5.94e6 | 334.33 | -2.66% | 9 |
+| SPY    | 763.25 | -1.02e10 | Short gamma | -1.65e8 | 777.10 | +1.81% | 13 |
+| QQQ    | 709.80 | -6.91e9 | Short gamma | -7.15e8 | 740.57 | +4.34% | 13 |
+| MSFT   | 529.05 | +4.12e8 | Long gamma | +1.77e7 | 479.25 | -9.41% | 8 |
+| GOOGL  | 340.59 | +8.42e7 | Long gamma | -9.34e6 | 332.82 | -2.28% | 8 |
+| AMZN   | 250.00 | +1.59e8 | Long gamma | -1.02e7 | 241.42 | -3.43% | 9 |
 
-Raw per-strike GEX: `data/gamma_exposure_latest.csv`.
+Raw per-strike GEX: `data/gamma_exposure_latest.csv`. (The previous table from this run, all-negative with no flip, came from the sign bug and was replaced.)
 
-**⚠️ Results invalid — sign-convention bug.** All 1,024 strike-level GEX values are negative, so every name reads "Short Gamma" and no zero-gamma flip can ever be found. In `main.py` (~line 117) both calls *and* puts are multiplied by −1 (`dealer_gex = -gex`). The standard convention (dealers long customer-sold calls, short customer-bought puts) is **call GEX = +, put GEX = −**. Until that is fixed, total GEX and flip strike are meaningless; the magnitudes are just −(total gamma notional).
+**Observations:**
+- A zero-gamma flip is now found for all six names.
+- SPY and QQQ are **short gamma** with spot *below* the flip, consistent with the prior week's selloff (QQQ −5.5% over 5 days): put OI dominates near spot, so dealer hedging amplifies moves until spot recovers above ~777 / ~741.
+- Single names are long gamma with the flip 2–9% below spot (dampened moves). Earnings in late October add event risk the gamma profile doesn't capture.
 
 ## IC Analysis (Simulated)
 

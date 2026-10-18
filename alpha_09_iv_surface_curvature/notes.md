@@ -65,49 +65,56 @@ Where `m = ln(K/S)` = log moneyness.
 ### Quadratic Smile Fitting
 - Fit `IV = a + b·m + c·m²` where `m = ln(K/S)`
 - Weighted by liquidity (volume + open interest)
-- Separate fits for calls and puts, then average
-- Require ≥5 liquid points per side, R² > 0.5 preferred
+- Single fit on OTM options only (puts K < S, calls K ≥ S, live bid); ITM IVs are noisy
+- Expiration closest to 30 DTE (7–60 DTE window)
+- Require ≥5 liquid points, R² > 0.5 preferred
 
 ### Normalization
 - Raw curvature has units of IV/moneyness² — not comparable across tickers
 - Normalize: `normalized_curvature = curvature / ATM_IV`
 - This is the "vol of vol" proxy in dimensionless form
-- Typical range: 0.01 (flat) to 0.15+ (steep smile)
+- Not comparable across tenors (m² scales with T); use `rel_butterfly` for regimes
 
 ### Butterfly Approximation
-- 25-delta butterfly ≈ curvature × (Δm)²
-- Δm for 25-delta ≈ ln(1.05) - ln(0.95) ≈ 0.10 → (0.10)² = 0.01
-- Using 0.0225 as conservative multiplier
-- Gives butterfly in same units as IV (annualized vol points)
+- From the quadratic: `(IV(+m) + IV(−m))/2 − IV(0) = c·m²`
+- 25Δ strikes sit at `m ≈ N⁻¹(0.75)·σ_ATM·√T ≈ 0.674·σ√T` in log-moneyness
+- `butterfly_25d = c · (0.674·σ_ATM·√T)²` in IV units (0.01 = 1 vol point)
+- `rel_butterfly = butterfly_25d / ATM_IV`; regime: High > 2.5%, Low < 1.0% (provisional until history exists)
+- *(Before 2026-10-18 a fixed Δm² = 0.0225 was used — ~10× too large at 7–30 DTE)*
 
 ### Known Limitations
-1. **Single expiration** — Using nearest expiry ignores term structure of curvature
+1. **Single expiration** — Using ~30 DTE expiry ignores term structure of curvature
 2. **yfinance gamma often NaN** — Relies on quadratic fit rather than gamma sum
 3. **No historical option chains** — Requires daily snapshots stored externally
 4. **After-hours bid/ask** — Often zero; relies on lastPrice-derived IV
 5. **Moneyness window fixed** — 30% may be too wide/narrow for some tickers
-6. **Call/put asymmetry** — Averaging assumes symmetric smile; puts often steeper
+6. **Quadratic smile** — Can't capture put/call wing asymmetry beyond the linear skew term
 
 ## Results (2026-10-16 close, run 2026-10-18)
 
-Expiration used: 2026-10-26 (7 DTE) for all tickers.
+Expiration used: 2026-11-20 (33 DTE) for all tickers.
 
-| Ticker | Price | ATM IV | Skew (linear) | Curvature (raw) | Norm. Curvature | Butterfly (25d) | Fit R² | Points |
-|--------|-------|--------|---------------|-----------------|-----------------|-----------------|--------|--------|
-| AAPL   | 343.46 | 0.2588 | -0.7026 | 15.06 | 58.20 | 0.3389 | 0.84 | 42 |
-| SPY    | 763.25 | 0.1350 | -1.7507 | 13.35 | 98.90 | 0.3004 | 0.97 | 122 |
-| QQQ    | 709.80 | 0.2399 | -1.1213 | 14.23 | 59.30 | 0.3201 | 0.93 | 128 |
-| MSFT   | 529.05 | 0.2749 | -0.6218 | 12.69 | 46.16 | 0.2855 | 0.90 | 44 |
-| GOOGL  | 340.59 | 0.3164 | -0.6903 | 14.94 | 47.22 | 0.3361 | 0.92 | 40 |
-| AMZN   | 250.00 | 0.3212 | -0.3715 | 1.79 | 5.56 | 0.0402 | 0.32 | 27 |
+| Ticker | Price | ATM IV | Skew (linear) | Curvature (raw) | Butterfly 25Δ | Rel. Butterfly | Regime | Fit R² | Points |
+|--------|-------|--------|---------------|-----------------|---------------|----------------|--------|--------|--------|
+| AAPL   | 343.46 | 0.2810 | -0.286 | 1.114 | 0.0036 | 1.29% | Normal | 0.95 | 37 |
+| SPY    | 763.25 | 0.1569 | -0.705 | 1.860 | 0.0019 | 1.20% | Normal | 0.98 | 148 |
+| QQQ    | 709.80 | 0.2261 | -0.655 | 1.777 | 0.0037 | 1.65% | Normal | 0.98 | 171 |
+| MSFT   | 529.05 | 0.3278 | -0.249 | 0.894 | 0.0040 | 1.21% | Normal | 0.95 | 59 |
+| GOOGL  | 340.59 | 0.3767 | -0.123 | 1.031 | 0.0060 | 1.60% | Normal | 0.85 | 41 |
+| AMZN   | 250.00 | 0.4079 | -0.164 | 0.908 | 0.0062 | 1.52% | Normal | 0.89 | 30 |
 
-Raw: `data/iv_surface_curvature_latest.csv`.
+Raw: `data/iv_surface_curvature_latest.csv`. Butterfly in IV units (0.0036 = 0.36 vol points).
+
+**Fixes in this run (2026-10-18):**
+- 25Δ butterfly used a fixed Δm² = 0.0225; the correct 25Δ log-moneyness at 30 DTE is only ~0.03–0.08, so the old values (0.29–0.34) were ~10× too large. Now uses `0.674·σ√T`.
+- Fit uses OTM options only and a ~30 DTE expiry (was nearest ≥7 DTE with ITM strikes included); R² improved to 0.85–0.98 (AMZN 0.32 → 0.89).
+- Regime thresholds moved to relative butterfly; the old normalized-curvature thresholds labelled every name "High".
 
 **Observations:**
-- Negative linear skew and positive curvature for all names (normal equity smile).
-- SPY has the steepest skew and highest normalized curvature, consistent with index put demand.
-- AMZN's fit is poor (R² 0.32, only 27 points) — its curvature/butterfly values are not reliable this run.
-- **Suspicious:** butterfly (25d) values of ~0.30–0.34 vol points are implausibly large for a 7-DTE smile (typical 25Δ fly is a few vol points). Likely the 25Δ strikes are being approximated too far OTM at short DTE, or the fly is computed from the fitted quadratic far outside the data. Every name is also labelled "High Curvature", so the classification threshold is uncalibrated. Check the 25Δ strike mapping and use a ~30 DTE expiry.
+- 25Δ flies of 0.2–0.6 vol points are realistic for 1-month equity smiles.
+- Index ETFs have the steepest linear skew (SPY −0.71, QQQ −0.66) and highest raw curvature; single names have flatter skew but similar relative wing premium.
+- QQQ and GOOGL have the richest wings relative to ATM (~1.6%); SPY the cheapest (1.2%).
+- The 11-20 expiry includes earnings for the single names, which lifts ATM IV and depresses relative curvature.
 
 ## IC Analysis (Simulated)
 

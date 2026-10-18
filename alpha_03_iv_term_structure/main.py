@@ -18,6 +18,10 @@ from datetime import datetime
 
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+MIN_DTE = 7  # skip expiring/weekly-noise legs (0-DTE IV is unreliable)
+# Regime thresholds on term_ratio = far_IV / near_IV (unit-free)
+CONTANGO_RATIO = 1.03       # far IV ≥ 3% above near → contango
+BACKWARDATION_RATIO = 0.97  # far IV ≥ 3% below near → backwardation
 
 
 def compute_atm_iv(chain_df, current_price):
@@ -50,8 +54,9 @@ def compute_term_structure(ticker_str):
         for e in expirations:
             try:
                 d = datetime.strptime(e, "%Y-%m-%d")
-                if d.date() > now.date() and (d - now).days <= 180:
-                    valid_exps.append((d, (d - now).days))
+                dte = (d.date() - now.date()).days
+                if MIN_DTE <= dte <= 180:
+                    valid_exps.append((d, dte))
             except ValueError:
                 continue
         valid_exps.sort(key=lambda x: x[0])
@@ -114,7 +119,9 @@ def compute_term_structure(ticker_str):
         # Term structure slope: (far_iv - near_iv) / (far_dte - near_dte)
         # Positive = normal contango (IV increases with time)
         # Negative = backwardation (near-term IV > far-term IV = stress/fear)
+        # Units: IV (decimal) per calendar day. ×30 → vol change per month.
         term_slope = (far_iv - near_iv) / (far_dte - near_dte) if far_dte != near_dte else np.nan
+        term_ratio = far_iv / near_iv if near_iv > 0 else np.nan
         
         # Also compute curvature (3-point if available)
         curvature = np.nan
@@ -133,6 +140,7 @@ def compute_term_structure(ticker_str):
             'near_dte': int(near_dte),
             'far_dte': int(far_dte),
             'term_slope': round(term_slope, 6),
+            'term_ratio': round(term_ratio, 4),
             'term_curvature': round(curvature, 8) if not pd.isna(curvature) else np.nan,
             'n_expirations': len(df),
             'term_structure': df.to_dict('records'),
@@ -169,9 +177,10 @@ if __name__ == "__main__":
         print(f"  Expirations:          {r['n_expirations']}")
         
         # Interpretation
-        if r['term_slope'] < -0.001:
+        print(f"  Term ratio (far/near): {r['term_ratio']:.4f}")
+        if r['term_ratio'] < BACKWARDATION_RATIO:
             print(f"  📉 BACKWARDATION — Near-term IV premium (stress/fear)")
-        elif r['term_slope'] > 0.001:
+        elif r['term_ratio'] > CONTANGO_RATIO:
             print(f"  📈 CONTANGO — Normal term structure (IV rises with time)")
         else:
             print(f"  ➖ FLAT — Minimal term structure")

@@ -93,23 +93,28 @@ This isolates the *non-linear* component of tail pricing:
 
 ## Results (2026-10-16 close)
 
-*Run 2026-10-18 on Friday's closing chains, nearest liquid expiry 2026-10-26 (7 DTE). The previous 2026-10-11 table was illustrative ("expected format"), not real output, and has been replaced.*
+*Run 2026-10-18 on Friday's closing chains, expiry 2026-11-20 (32 DTE). Replaces an earlier 7-DTE table from the same day that had the strike-mapping bug (see Fix below).*
 
 | Ticker | Price | DTE | ATM IV | 25d Skew | Conv 10d | Conv 5d | Slope | Tail Prem | Wing Ratio | Contracts (P/C) |
 |--------|-------|-----|--------|----------|----------|---------|-------|-----------|------------|-----------------|
-| AAPL   | 343.46 | 7 | 0.2544 | 0.0696 | 0.4325 | 0.4325 | 0.1024 | -0.2101 | 1.321 | 16 / 26 |
-| SPY    | 763.25 | 7 | 0.1359 | 0.1193 | 2.2764 | 3.3379 | 0.6448 | -0.4670 | 1.862 | 72 / 51 |
-| QQQ    | 709.80 | 7 | 0.2309 | 0.1234 | 0.8298 | 1.6917 | 0.1525 | -0.2950 | 1.753 | 75 / 58 |
-| MSFT   | 529.05 | 7 | 0.2871 | 0.0493 | 0.7216 | 1.1112 | 0.0191 | -0.3198 | 1.018 | 19 / 25 |
-| GOOGL  | 340.59 | 7 | 0.3420 | 0.0266 | 0.4194 | 0.9727 | -0.1431 | -0.0136 | 1.125 | 17 / 23 |
-| AMZN   | 250.00 | 7 | 0.3439 | 0.0626 | 0.1661 | 0.4175 | -0.1551 | -0.0667 | 1.318 | 11 / 16 |
+| AAPL   | 343.46 | 32 | 0.2675 | 0.0218 | 0.1768 | 0.3068 | 0.1188 | +0.0902 | 1.264 | 52 / 64 |
+| SPY    | 763.25 | 32 | 0.1508 | 0.0797 | 0.6211 | 1.2948 | 0.1173 | -0.1957 | 1.979 | 184 / 124 |
+| QQQ    | 709.80 | 32 | 0.2287 | 0.0712 | 0.2093 | 0.4978 | 0.0295 | -0.0160 | 1.757 | 169 / 191 |
+| MSFT   | 529.05 | 32 | 0.3255 | 0.0135 | 0.0358 | 0.1260 | 0.0216 | +0.0587 | 1.149 | 73 / 76 |
+| GOOGL  | 340.59 | 32 | 0.3951 | -0.0001 | -0.0585 | 0.0097 | -0.0901 | +0.0782 | 1.083 | 62 / 81 |
+| AMZN   | 250.00 | 32 | 0.4068 | 0.0027 | 0.0348 | 0.1010 | 0.0133 | +0.0500 | 1.064 | 45 / 52 |
+
+**Fix (2026-10-18):** `get_iv_at_moneyness` took the nearest liquid strike with no distance limit. On 7-DTE chains the liquid strikes don't reach ±10–15%, so the 10% and 15% OTM legs both fell back to the farthest available strike (AAPL/MSFT/AMZN had identical "10d"/"5d" IVs). The 10% OTM skew was then read at a strike much closer to spot, which made the tail convexity premium negative for every name. The formula itself (`(put_10 − call_10) − 2 × skew_25`) was not wrong. Now:
+- IV is linearly interpolated on the OTM smile (puts below spot, calls above), returning NaN if the target is outside the liquid strike range or the bracketing strikes are > 5% of spot apart.
+- Expiry closest to 30 DTE (20–60) instead of the nearest ≥ 7 DTE.
+- IV floor raised from 1% to 5% to drop yfinance placeholder IVs.
+- The ±15% ("5d") leg is optional; the ±10% legs are required.
 
 **Observations:**
-- **Positive 25d skew everywhere** (put IV > call IV). Indices are steepest: QQQ 0.123, SPY 0.119.
-- **SPY has by far the most convex smile** (Conv 10d 2.28, 5d 3.34, wing ratio 1.86): heavy index tail-hedge pricing.
-- **Conv 5d ≥ Conv 10d for every name**, as expected (deeper wings are more convex).
-- **Tail convexity premium is negative for all six**, opposite to the earlier "usually positive" claim. Check the sign convention in `main.py` before interpreting it.
-- ⚠️ **Sparse single-stock wings:** AAPL's 10d and 5d IVs are identical (0.3523 / 0.2666), as are AMZN's and MSFT's 10d/5d put IV. The 5-delta strike falls back to the same farthest liquid strike. With only 11-26 contracts per side at 7 DTE, single-stock convexity is noisy. A 14-30 DTE expiry or the BS-delta refinement (Next Steps #3) would help.
+- **Tail premium is now mixed, as it should be:** positive for the four single stocks (put skew steepens further out), negative for SPY (−0.196) and slightly for QQQ. For the indices the *call* wing turns back up past 10% OTM (SPY call IV 0.120 → 0.133 → 0.168), shrinking the put-call difference relative to a linear extrapolation. It's a real smile shape, not a sign bug.
+- **SPY still has by far the most convex smile** (Conv 10d 0.62, 5d 1.29, wing ratio 1.98).
+- **Earnings in the 11-20 expiry** (AAPL/MSFT/GOOGL/AMZN report late October) lift ATM IV relative to the wings. That's why GOOGL's 10d convexity is negative and single-stock 25d skew is near zero. Single-stock readings should be compared ex-earnings.
+- Labels "25d/10d/5d" are moneyness proxies (±5/10/15%), not true deltas.
 
 ## IC Analysis
 

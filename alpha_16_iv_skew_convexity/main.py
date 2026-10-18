@@ -30,29 +30,42 @@ from datetime import datetime
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
 
 
-def get_iv_at_moneyness(chain_df, current_price, target_moneyness, option_type='put'):
-    """Get IV at a specific moneyness level.
-    
-    moneyness = strike / spot
-    - 0.90 = 10% OTM put
-    - 0.95 = 5% OTM put (~25 delta)
-    - 1.00 = ATM
-    - 1.05 = 5% OTM call (~25 delta)
-    - 1.10 = 10% OTM call
+def get_iv_at_moneyness(chain_df, current_price, target_moneyness, option_type='put',
+                        max_gap=0.05):
+    """Get IV at a specific moneyness level by linear interpolation in strike.
+
+    moneyness = strike / spot (0.90 = 10% OTM put, 1.10 = 10% OTM call, ...).
+    Labels like "10d" elsewhere are moneyness proxies, not true deltas.
+
+    Returns NaN when the target strike lies outside the liquid strike range or the
+    bracketing strikes are more than `max_gap` (fraction of spot) apart. Previously
+    the nearest strike was used with no limit, so on short-dated chains 10% and 15%
+    OTM both mapped to the last liquid strike (identical IVs, understated tail skew).
     """
     target_strike = current_price * target_moneyness
-    
+
+    # OTM side only (plus the strike at spot) — ITM quotes are stale/illiquid
     if option_type == 'put':
-        candidates = chain_df[chain_df['strike'] < current_price]
+        candidates = chain_df[chain_df['strike'] <= current_price * 1.01]
     else:
-        candidates = chain_df[chain_df['strike'] > current_price]
-    
-    if len(candidates) == 0:
+        candidates = chain_df[chain_df['strike'] >= current_price * 0.99]
+
+    candidates = candidates.dropna(subset=['impliedVolatility']).sort_values('strike')
+    if len(candidates) < 2:
         return np.nan
-    
-    idx = (candidates['strike'] - target_strike).abs().idxmin()
-    row = candidates.loc[idx]
-    return row['impliedVolatility'] if pd.notna(row['impliedVolatility']) else np.nan
+
+    strikes = candidates['strike'].values
+    ivs = candidates['impliedVolatility'].values
+    if target_strike < strikes[0] or target_strike > strikes[-1]:
+        return np.nan
+
+    hi = np.searchsorted(strikes, target_strike)
+    lo = max(hi - 1, 0)
+    hi = min(hi, len(strikes) - 1)
+    if (strikes[hi] - strikes[lo]) > max_gap * current_price:
+        return np.nan
+
+    return float(np.interp(target_strike, strikes, ivs))
 
 
 def compute_skew_convexity(ticker_str):
@@ -67,7 +80,7 @@ def compute_skew_convexity(ticker_str):
         if current_price is None or current_price <= 0:
             return None
         
-        # Get valid expirations within 180 days, focus on 7-60 DTE for liquidity
+        # Expiry closest to 30 DTE (within 20-60): 7-DTE wings rarely reach ±15% moneyness
         expirations = list(tq.options)
         now = datetime.now()
         valid_exps = []
@@ -75,7 +88,7 @@ def compute_skew_convexity(ticker_str):
             try:
                 d = datetime.strptime(e, "%Y-%m-%d")
                 dte = (d - now).days
-                if 7 <= dte <= 60:
+                if 20 <= dte <= 60:
                     valid_exps.append((d, dte))
             except ValueError:
                 continue
@@ -84,8 +97,7 @@ def compute_skew_convexity(ticker_str):
         if not valid_exps:
             return None
         
-        # Use nearest liquid expiration (monthly preferred)
-        target_exp = valid_exps[0]
+        target_exp = min(valid_exps, key=lambda x: abs(x[1] - 30))
         exp_date, dte = target_exp
         exp_str = exp_date.strftime("%Y-%m-%d")
         
@@ -103,14 +115,14 @@ def compute_skew_convexity(ticker_str):
         
         calls = calls[
             (calls['impliedVolatility'].notna()) &
-            (calls['impliedVolatility'] > 0.01) &
+            (calls['impliedVolatility'] > 0.05) &
             (calls['impliedVolatility'] < 3.0) &
             ((calls['volume'] > 10) | (calls['openInterest'] > 100))
         ].copy()
         
         puts = puts[
             (puts['impliedVolatility'].notna()) &
-            (puts['impliedVolatility'] > 0.01) &
+            (puts['impliedVolatility'] > 0.05) &
             (puts['impliedVolatility'] < 3.0) &
             ((puts['volume'] > 10) | (puts['openInterest'] > 100))
         ].copy()
@@ -139,8 +151,10 @@ def compute_skew_convexity(ticker_str):
         put_5d = get_iv_at_moneyness(puts, current_price, 0.85, 'put')
         call_5d = get_iv_at_moneyness(calls, current_price, 1.15, 'call')
         
-        if any(pd.isna(x) for x in [put_25d, call_25d, put_10d, call_10d, put_5d, call_5d]):
+        if any(pd.isna(x) for x in [put_25d, call_25d, put_10d, call_10d]):
+            print(f"  ⚠️ {ticker_str}: wings don't reach ±10% moneyness at {exp_str}")
             return None
+        # Deep tail (±15%) is optional: NaN when the liquid chain doesn't reach it
         
         # Standard skew (linear): 25d put - 25d call
         skew_25d = put_25d - call_25d
@@ -161,6 +175,7 @@ def compute_skew_convexity(ticker_str):
         # We measure the deviation
         predicted_10d_skew = skew_25d * (0.10 / 0.05)  # Linear extrapolation
         actual_10d_skew = put_10d - call_10d
+        # Negative = put-call skew flattens in the tails (concave skew); positive = steepens
         tail_convexity_premium = (actual_10d_skew - predicted_10d_skew) / atm_iv
         
         # Put/Call wing ratio: 10d_put / 10d_call (smile symmetry)
@@ -176,11 +191,11 @@ def compute_skew_convexity(ticker_str):
             'call_25d_iv': round(call_25d, 4),
             'put_10d_iv': round(put_10d, 4),
             'call_10d_iv': round(call_10d, 4),
-            'put_5d_iv': round(put_5d, 4),
-            'call_5d_iv': round(call_5d, 4),
+            'put_5d_iv': round(put_5d, 4) if pd.notna(put_5d) else np.nan,
+            'call_5d_iv': round(call_5d, 4) if pd.notna(call_5d) else np.nan,
             'skew_25d': round(skew_25d, 6),
             'skew_convexity_10d': round(skew_convexity_10d, 6),
-            'skew_convexity_5d': round(skew_convexity_5d, 6),
+            'skew_convexity_5d': round(skew_convexity_5d, 6) if pd.notna(skew_convexity_5d) else np.nan,
             'skew_slope': round(skew_slope, 6),
             'tail_convexity_premium': round(tail_convexity_premium, 6),
             'wing_ratio': round(wing_ratio, 4) if np.isfinite(wing_ratio) else np.nan,

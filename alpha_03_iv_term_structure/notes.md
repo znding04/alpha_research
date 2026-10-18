@@ -53,7 +53,13 @@ For each expiration, ATM IV is computed as the average of call and put IV at the
 ```
 term_slope = (IV_far - IV_near) / (DTE_far - DTE_near)
 ```
-Units: IV points per day. Typical range: -0.005 to +0.005.
+Units: IV (decimal) per calendar day; ×30 gives vol change per month. Observed range ≈ -0.0005 to +0.0005.
+
+### Regime Labels
+Labels use the unit-free `term_ratio = IV_far / IV_near`: CONTANGO if > 1.03, BACKWARDATION if < 0.97, else FLAT. (The old ±0.001/day slope threshold implied a 9-vol-point move over 90 days, so every name was FLAT.)
+
+### Near Leg
+Expirations below `MIN_DTE = 7` are skipped; 0-DTE/expiry-day IVs are unreliable.
 
 ### Known Limitations
 1. **No historical option chains** from yfinance — requires daily snapshots stored externally
@@ -64,23 +70,23 @@ Units: IV points per day. Typical range: -0.005 to +0.005.
 
 ## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | Near IV (DTE) | Far IV (DTE) | Term Slope (/day) | Curvature | N Exp |
-|--------|-------|---------------|--------------|-------------------|-----------|-------|
-| AAPL   | 343.46 | 0.2514 (0d) | 0.2767 (179d) | +0.000142 | -1.60e-05 | 15 |
-| SPY    | 763.25 | 0.1390 (0d) | 0.1616 (163d) | +0.000138 | -4.5e-07 | 22 |
-| QQQ    | 709.80 | 0.2366 (0d) | 0.2275 (163d) | -0.000056 | -8.7e-07 | 20 |
-| MSFT   | 529.05 | 0.2434 (0d) | 0.3098 (179d) | +0.000371 | -3.87e-05 | 13 |
-| GOOGL  | 340.59 | 0.3185 (0d) | 0.3621 (179d) | +0.000244 | -1.60e-05 | 14 |
-| AMZN   | 250.00 | 0.2871 (0d) | 0.3724 (179d) | +0.000476 | -6.39e-05 | 15 |
+| Ticker | Price | Near IV (DTE) | Far IV (DTE) | Term Slope (/day) | Term Ratio | Regime | N Exp |
+|--------|-------|---------------|--------------|-------------------|------------|--------|-------|
+| AAPL   | 343.46 | 0.2635 (8d) | 0.2767 (180d) | +0.000077 | 1.050 | CONTANGO | 12 |
+| SPY    | 763.25 | 0.1372 (8d) | 0.1616 (164d) | +0.000156 | 1.178 | CONTANGO | 17 |
+| QQQ    | 709.80 | 0.2297 (8d) | 0.2275 (164d) | -0.000015 | 0.990 | FLAT | 15 |
+| MSFT   | 529.05 | 0.2847 (8d) | 0.3098 (180d) | +0.000146 | 1.089 | CONTANGO | 10 |
+| GOOGL  | 340.59 | 0.3341 (8d) | 0.3621 (180d) | +0.000163 | 1.084 | CONTANGO | 11 |
+| AMZN   | 250.00 | 0.3464 (8d) | 0.3724 (180d) | +0.000151 | 1.075 | CONTANGO | 12 |
 
 Raw per-expiration ATM IVs: `data/iv_term_structure_latest.csv`.
 
+**Fixes in this run (2026-10-18):** near leg now ≥ 7 DTE (was 0 DTE on the weekend run); regime labels switched to the far/near ratio, so they're no longer all FLAT.
+
 **Observations:**
-- All 6 tickers now have full term structures (13–22 expirations); the earlier "<2 expirations" problem and the 0.0156 placeholder IVs from the 2026-09-28 run are gone (that table was discarded).
-- Contango for 5/6 names; QQQ is the only name in mild backwardation (slope < 0).
-- AMZN, GOOGL and MSFT show a clear IV hump at the 10-30 expiry (AMZN 0.52, GOOGL 0.48, MSFT 0.41 vs ~0.30–0.37 elsewhere) — earnings events sitting in that expiry. This distorts slope/curvature; earnings expirations should be excluded or event-vol stripped.
-- "Near" = 0 DTE because the run was on a weekend (next expiry 10-19). 0-DTE IV is noisy; use a minimum DTE (e.g. ≥7d) for the near leg.
-- All names classified FLAT by the script's thresholds — thresholds may need recalibration to the per-day slope scale.
+- Contango for 5/6 names; QQQ is flat (ratio 0.99), the only name without upward-sloping vol.
+- AMZN, GOOGL and MSFT still show an earnings IV hump at the 10-30 expiry, which distorts curvature (all three negative). Earnings expirations should be excluded or event vol stripped.
+- The 2026-09-28 table (0.0156 placeholder IVs) was discarded.
 
 ## IC Analysis (Simulated)
 

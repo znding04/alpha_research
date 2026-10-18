@@ -14,29 +14,47 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
+from math import erf
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
 
 
-def get_atm_iv_for_delta(chain_df, current_price, target_delta=0.25, option_type='put'):
-    """Approximate delta by finding strike closest to target delta moneyness.
-    
-    For puts: 25-delta ≈ strike ~ 0.95 * spot (OTM)
-    For calls: 25-delta ≈ strike ~ 1.05 * spot (OTM)
+RISK_FREE = 0.04          # flat annual rate for delta calc
+NEAR_DTE, FAR_DTE = 30, 75  # target tenors (days)
+MIN_DTE = 7
+
+
+def bs_delta(spot, strike, dte, iv, option_type='call', r=RISK_FREE):
+    """Black-Scholes delta (no dividends). Puts return negative delta."""
+    t = max(dte, 1) / 365.0
+    d1 = (np.log(spot / strike) + (r + 0.5 * iv ** 2) * t) / (iv * np.sqrt(t))
+    n_d1 = 0.5 * (1 + erf(d1 / np.sqrt(2)))
+    return n_d1 if option_type == 'call' else n_d1 - 1
+
+
+def get_atm_iv_for_delta(chain_df, current_price, dte, target_delta=0.25, option_type='put'):
+    """IV at a target |delta|, linearly interpolated between OTM strikes.
+
+    Delta is computed per strike with Black-Scholes using that strike's own IV.
+    Only OTM options are used (puts K < S, calls K > S) since ITM IVs are noisy.
     """
     if option_type == 'put':
-        target_strike = current_price * 0.95
-        candidates = chain_df[chain_df['strike'] < current_price]
+        candidates = chain_df[chain_df['strike'] < current_price].copy()
     else:
-        target_strike = current_price * 1.05
-        candidates = chain_df[chain_df['strike'] > current_price]
-    
-    if len(candidates) == 0:
+        candidates = chain_df[chain_df['strike'] > current_price].copy()
+
+    if len(candidates) < 2:
         return np.nan
-    
-    idx = (candidates['strike'] - target_strike).abs().idxmin()
-    row = candidates.loc[idx]
-    return row['impliedVolatility'] if pd.notna(row['impliedVolatility']) else np.nan
+
+    candidates['abs_delta'] = [
+        abs(bs_delta(current_price, k, dte, v, option_type))
+        for k, v in zip(candidates['strike'], candidates['impliedVolatility'])
+    ]
+    candidates = candidates.sort_values('abs_delta')
+    d = candidates['abs_delta'].values
+    if not (d.min() <= target_delta <= d.max()):
+        return np.nan
+    return float(np.interp(target_delta, d, candidates['impliedVolatility'].values))
 
 
 def compute_skew_metrics(ticker_str):
@@ -51,22 +69,29 @@ def compute_skew_metrics(ticker_str):
         if current_price is None or current_price <= 0:
             return None
         
-        # Get all valid expirations within 180 days
+        # Pick the expirations closest to the near/far target tenors (skip < MIN_DTE)
         expirations = list(tq.options)
         now = datetime.now()
         valid_exps = []
         for e in expirations:
             try:
                 d = datetime.strptime(e, "%Y-%m-%d")
-                if d.date() > now.date() and (d - now).days <= 180:
-                    valid_exps.append((d, (d - now).days))
+                dte = (d.date() - now.date()).days
+                if MIN_DTE <= dte <= 180:
+                    valid_exps.append((d, dte))
             except ValueError:
                 continue
-        valid_exps.sort(key=lambda x: x[0])
-        
+
         if not valid_exps:
             return None
-        
+
+        targets = []
+        for target in (NEAR_DTE, FAR_DTE):
+            best = min(valid_exps, key=lambda x: abs(x[1] - target))
+            if best not in targets:
+                targets.append(best)
+        valid_exps = sorted(targets, key=lambda x: x[0])
+
         results = []
         for exp_date, dte in valid_exps:
             exp_str = exp_date.strftime("%Y-%m-%d")
@@ -75,20 +100,22 @@ def compute_skew_metrics(ticker_str):
                 calls = chain.calls
                 puts = chain.puts
                 
-                # Filter liquid options
-                calls = calls[
-                    (calls['volume'] > 10) | (calls['openInterest'] > 100)
-                ].copy()
-                puts = puts[
-                    (puts['volume'] > 10) | (puts['openInterest'] > 100)
-                ].copy()
+                # Filter: some liquidity, a live quote, and a sane IV
+                def _liquid(df):
+                    return df[
+                        ((df['volume'].fillna(0) > 0) | (df['openInterest'].fillna(0) > 50)) &
+                        (df['bid'].fillna(0) > 0) &
+                        (df['impliedVolatility'] > 0.03) & (df['impliedVolatility'] < 3.0)
+                    ].copy()
+                calls = _liquid(calls)
+                puts = _liquid(puts)
                 
                 if len(calls) < 5 or len(puts) < 5:
                     continue
                 
                 # Get 25-delta put and call IV
-                put_25d = get_atm_iv_for_delta(puts, current_price, 0.25, 'put')
-                call_25d = get_atm_iv_for_delta(calls, current_price, 0.25, 'call')
+                put_25d = get_atm_iv_for_delta(puts, current_price, dte, 0.25, 'put')
+                call_25d = get_atm_iv_for_delta(calls, current_price, dte, 0.25, 'call')
                 
                 if pd.isna(put_25d) or pd.isna(call_25d):
                     continue
@@ -97,8 +124,9 @@ def compute_skew_metrics(ticker_str):
                 skew = put_25d - call_25d
                 
                 # Also compute ATM IV for reference
-                atm_strike_idx = (pd.concat([calls, puts])['strike'] - current_price).abs().idxmin()
-                atm_iv = pd.concat([calls, puts]).loc[atm_strike_idx, 'impliedVolatility']
+                # ignore_index: calls/puts share index labels, so .loc would return a Series
+                both = pd.concat([calls, puts], ignore_index=True)
+                atm_iv = both.loc[(both['strike'] - current_price).abs().idxmin(), 'impliedVolatility']
                 
                 results.append({
                     'expiration': exp_str,
@@ -108,7 +136,8 @@ def compute_skew_metrics(ticker_str):
                     'skew_25d': skew,
                     'atm_iv': atm_iv if pd.notna(atm_iv) else np.nan,
                 })
-            except Exception:
+            except Exception as e:
+                print(f"  ⚠️ {ticker_str} {exp_str}: {type(e).__name__}: {e}")
                 continue
         
         if not results:

@@ -17,49 +17,20 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
-from common.utils import compute_ic, compute_signal_metrics, rolling_ic
+from common.utils import compute_ic, compute_signal_metrics, rolling_ic, forward_return, forward_vol_change, forward_returns_available, signal_as_of
 
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
 
 
-def get_forward_returns(ticker_str, days_ahead=5):
-    """Get forward returns for a ticker."""
-    try:
-        tq = yf.Ticker(ticker_str)
-        hist = tq.history(period=f"{days_ahead + 10}d")
-        if len(hist) < days_ahead + 1:
-            return np.nan
-        current = hist['Close'].iloc[-days_ahead - 1]
-        future = hist['Close'].iloc[-1]
-        return (future - current) / current
-    except Exception:
-        return np.nan
+def get_forward_returns(ticker_str, days_ahead=5, as_of=None):
+    """Return over the `days_ahead` trading days AFTER the signal snapshot date (NaN if not yet available)."""
+    return forward_return(ticker_str, as_of, days_ahead)
 
 
-def get_forward_vol_change(ticker_str, days_ahead=5):
-    """Get forward realized vol change for a ticker."""
-    try:
-        tq = yf.Ticker(ticker_str)
-        # Need extra days for the realized vol window
-        hist = tq.history(period=f"{days_ahead + 30}d")
-        if len(hist) < days_ahead + 10:
-            return np.nan
-
-        close = hist['Close']
-        log_returns = np.log(close / close.shift(1)).dropna()
-
-        # Current RV (last 30 days before forecast period)
-        current_rv = log_returns.iloc[-days_ahead - 30:-days_ahead].std() * np.sqrt(252)
-        # Forward RV (last 30 days including forecast period)
-        future_rv = log_returns.iloc[-30:].std() * np.sqrt(252)
-
-        if pd.isna(current_rv) or pd.isna(future_rv) or current_rv <= 0:
-            return np.nan
-
-        return (future_rv - current_rv) / current_rv
-    except Exception:
-        return np.nan
+def get_forward_vol_change(ticker_str, days_ahead=5, as_of=None):
+    """Realized-vol change over the `days_ahead` trading days AFTER the signal snapshot date (NaN if not yet available)."""
+    return forward_vol_change(ticker_str, as_of, days_ahead)
 
 
 def run_ic_analysis():
@@ -74,6 +45,7 @@ def run_ic_analysis():
         return
 
     vov_df = pd.read_csv(vov_path)
+    as_of = signal_as_of(vov_path)
 
     # Get vol-of-vol signal per ticker
     vov_signal = vov_df.set_index('ticker')['vol_of_vol']
@@ -88,10 +60,10 @@ def run_ic_analysis():
     print(vov_pctile_signal.to_string())
 
     # Get forward returns (5-day)
-    print("\nFetching 5-day forward returns...")
+    print(f"\nFetching 5-day forward returns after {as_of.date()}...")
     forward_returns = {}
     for t in TICKERS:
-        ret = get_forward_returns(t, 5)
+        ret = get_forward_returns(t, 5, as_of)
         forward_returns[t] = ret
         print(f"  {t}: {ret:.4f}" if pd.notna(ret) else f"  {t}: N/A")
 
@@ -99,13 +71,15 @@ def run_ic_analysis():
     print("\nFetching 5-day forward vol change...")
     forward_vol_change = {}
     for t in TICKERS:
-        vol_chg = get_forward_vol_change(t, 5)
+        vol_chg = get_forward_vol_change(t, 5, as_of)
         forward_vol_change[t] = vol_chg
         print(f"  {t}: {vol_chg:.4f}" if pd.notna(vol_chg) else f"  {t}: N/A")
 
     # Align and compute IC for returns
     signals = vov_signal
     returns = pd.Series(forward_returns)
+    if not forward_returns_available(returns, as_of, 5):
+        return None
 
     common = signals.index.intersection(returns.index)
     signals = signals.loc[common]
@@ -174,7 +148,7 @@ def run_ic_analysis():
 
 def simulate_rolling_ic():
     """Simulate rolling IC with synthetic historical data for demonstration."""
-    print("\n🔄 Simulated Rolling IC (demo with random walks):")
+    print("\n🔄 SYNTHETIC — not evidence. Simulated Rolling IC (demo with random walks):")
     print("-" * 50)
 
     np.random.seed(42)

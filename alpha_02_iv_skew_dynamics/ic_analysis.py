@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
-from common.utils import compute_ic, compute_signal_metrics, rolling_ic
+from common.utils import compute_ic, compute_signal_metrics, rolling_ic, forward_return, forward_vol_change, forward_returns_available, signal_as_of
 
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
@@ -33,18 +33,9 @@ def fetch_historical_skew(ticker_str, lookback_days=60):
     pass
 
 
-def get_forward_returns(ticker_str, days_ahead=5):
-    """Get forward returns for a ticker."""
-    try:
-        tq = yf.Ticker(ticker_str)
-        hist = tq.history(period=f"{days_ahead + 10}d")
-        if len(hist) < days_ahead + 1:
-            return np.nan
-        current = hist['Close'].iloc[-days_ahead - 1]
-        future = hist['Close'].iloc[-1]
-        return (future - current) / current
-    except Exception:
-        return np.nan
+def get_forward_returns(ticker_str, days_ahead=5, as_of=None):
+    """Return over the `days_ahead` trading days AFTER the signal snapshot date (NaN if not yet available)."""
+    return forward_return(ticker_str, as_of, days_ahead)
 
 
 def run_ic_analysis():
@@ -59,6 +50,7 @@ def run_ic_analysis():
         return
     
     skew_df = pd.read_csv(skew_path)
+    as_of = signal_as_of(skew_path)
     
     # Get near-term skew per ticker (shortest DTE)
     near_skew = skew_df.sort_values('dte').groupby('ticker').first()['skew_25d']
@@ -67,16 +59,18 @@ def run_ic_analysis():
     print(near_skew.to_string())
     
     # Get forward returns (5-day)
-    print("\nFetching 5-day forward returns...")
+    print(f"\nFetching 5-day forward returns after {as_of.date()}...")
     forward_returns = {}
     for t in TICKERS:
-        ret = get_forward_returns(t, 5)
+        ret = get_forward_returns(t, 5, as_of)
         forward_returns[t] = ret
         print(f"  {t}: {ret:.4f}" if pd.notna(ret) else f"  {t}: N/A")
     
     # Align and compute IC
     signals = near_skew
     returns = pd.Series(forward_returns)
+    if not forward_returns_available(returns, as_of, 5):
+        return None
     
     common = signals.index.intersection(returns.index)
     signals = signals.loc[common]
@@ -100,7 +94,7 @@ def run_ic_analysis():
 
 def simulate_rolling_ic():
     """Simulate rolling IC with synthetic historical data for demonstration."""
-    print("\n🔄 Simulated Rolling IC (demo with random walks):")
+    print("\n🔄 SYNTHETIC — not evidence. Simulated Rolling IC (demo with random walks):")
     print("-" * 50)
     
     # Generate synthetic signal and return data for demonstration

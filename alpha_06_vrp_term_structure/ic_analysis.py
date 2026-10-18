@@ -18,7 +18,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-from common.utils import compute_ic, rolling_ic, compute_signal_metrics
+from common.utils import compute_ic, rolling_ic, compute_signal_metrics, forward_return, forward_returns_available
 
 TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
 
@@ -47,34 +47,20 @@ def load_historical_signals(data_dir="data"):
     return None
 
 
-def compute_forward_returns(tickers, forward_days=5):
-    """Compute forward returns for each ticker."""
-    returns = {}
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=forward_days + 10)  # extra for weekends
-    
-    for t in tickers:
-        try:
-            tq = yf.Ticker(t)
-            hist = tq.history(start=start_date.strftime("%Y-%m-%d"), 
-                              end=end_date.strftime("%Y-%m-%d"))
-            if len(hist) >= 2:
-                close = hist['Close']
-                # Forward return: (price_t+forward / price_t) - 1
-                # For latest data, we use the most recent return as proxy
-                ret = (close.iloc[-1] / close.iloc[-2]) - 1
-                returns[t] = ret
-        except Exception:
-            returns[t] = np.nan
+def compute_forward_returns(tickers, as_of, forward_days=5):
+    """Return over the `forward_days` trading days AFTER the snapshot date `as_of` (NaN if not yet available)."""
+    returns = {t: forward_return(t, as_of, forward_days) for t in tickers}
     return pd.Series(returns, name=f'forward_{forward_days}d')
 
 
-def run_cross_sectional_ic(signals_df, forward_days=5):
-    """Run cross-sectional IC analysis for a single date."""
+def run_cross_sectional_ic(signals_df, as_of, forward_days=5):
+    """Run cross-sectional IC analysis for a single snapshot date."""
     signals_date = signals_df.iloc[:, 0]  # Assuming single date column
     
     # Get forward returns
-    forward_rets = compute_forward_returns(TICKERS, forward_days)
+    forward_rets = compute_forward_returns(TICKERS, as_of, forward_days)
+    if not forward_returns_available(forward_rets, as_of, forward_days):
+        return {}
     
     results = {}
     for field in SIGNAL_FIELDS:

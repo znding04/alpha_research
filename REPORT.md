@@ -4,6 +4,8 @@
 **Universe**: AAPL, SPY, QQQ, MSFT, GOOGL, AMZN
 **Data Source**: yfinance (live option chains; no historical option data)
 
+> **Update 2026-10-18:** Alphas 10, 17, 18 and 21 were removed as duplicates (see README). Bugs fixed in 02, 03, 08, 09, 16; all `ic_analysis.py` now use forward returns after the signal date. The synthetic backtest numbers below have the IC built into the simulated data and are **not evidence** of predictive power. No alpha has a real IC yet.
+
 ---
 
 ## Table of Contents

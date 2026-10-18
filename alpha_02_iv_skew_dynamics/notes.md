@@ -45,38 +45,43 @@
 
 ## Implementation Notes
 
-### Approximation Method
-Since yfinance doesn't provide Greeks, 25-delta is approximated by moneyness:
-- 25-delta put ≈ 5% OTM (strike ≈ 0.95 × spot)
-- 25-delta call ≈ 5% OTM (strike ≈ 1.05 × spot)
+### 25-Delta Strike Location
+yfinance doesn't provide Greeks, so `main.py` computes Black-Scholes delta per OTM strike (using that strike's IV, r = 4%, no dividends) and linearly interpolates IV at |Δ| = 0.25. Only OTM options are used (puts K < S, calls K > S).
 
-This is a reasonable approximation for liquid large-cap names where IV smile is smooth.
+*(Before 2026-10-18 this used a fixed ±5% moneyness proxy, which mislocates 25Δ by tenor and IV level.)*
+
+### Expiration Selection
+Near leg = expiry closest to 30 DTE, far leg = closest to 75 DTE (both ≥ 7 DTE), so skew is comparable across tickers.
 
 ### Known Limitations
 1. **No historical option chains** from yfinance — requires daily snapshots stored externally
-2. **25-delta approximation** error varies with IV level and time to expiry
+2. **Delta model** — BS without dividends/skew-adjusted delta; small error for these names
 3. **Liquidity filter** may exclude informative illiquid strikes
 4. **Single snapshot** — cannot compute `skew_change_1d` without history
 
 ## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | Near Skew (exp, DTE) | Far Skew | Term Slope | N Expirations |
-|--------|-------|----------------------|----------|------------|---------------|
-| AAPL   | 343.46 | +0.0193 (11-27, 39d) | — | — | 1 |
-| SPY    | 763.25 | +0.0172 (02-26, 130d) | — | — | 1 |
-| QQQ    | 709.80 | +0.1533 (10-22, 3d) | — | — | 1 |
-| MSFT   | 529.05 | — | — | — | 0 |
-| GOOGL  | 340.59 | +0.0513 (10-23, 4d) | -0.0580 (04-16, 179d) | -0.000624 | 3 |
-| AMZN   | 250.00 | — | — | — | 0 |
+| Ticker | Price | Near Skew (11-20, 33d) | Far Skew (exp, DTE) | Term Slope (/day) |
+|--------|-------|------------------------|---------------------|-------------------|
+| AAPL   | 343.46 | +0.0294 | +0.0290 (12-18, 61d) | -0.000014 |
+| SPY    | 763.25 | +0.0460 | +0.0416 (12-31, 74d) | -0.000108 |
+| QQQ    | 709.80 | +0.0650 | +0.0451 (12-31, 74d) | -0.000484 |
+| MSFT   | 529.05 | +0.0200 | +0.0090 (12-18, 61d) | -0.000391 |
+| GOOGL  | 340.59 | +0.0116 | +0.0122 (12-18, 61d) | +0.000024 |
+| AMZN   | 250.00 | +0.0148 | +0.0024 (12-18, 61d) | -0.000442 |
 
-Skew = 25Δ put IV − 25Δ call IV. Raw: `data/iv_skew_latest.csv`.
+Skew = 25Δ put IV − 25Δ call IV (decimal; 0.01 = 1 vol point). Raw: `data/iv_skew_latest.csv`.
+
+**Fixes in this run (2026-10-18):**
+- MSFT/AMZN previously returned nothing: `pd.concat([calls, puts]).loc[idx]` hit duplicate index labels and returned a Series, raising inside a silent `except`. Fixed with `ignore_index=True`; per-expiry errors are now printed.
+- Fixed near/far tenors (30d / 75d targets) replace "first and last expiry within 180d" (which gave 3–130d near legs).
+- Real BS delta replaces the ±5% moneyness proxy; liquidity filter relaxed to volume > 0 or OI > 50 with a live bid.
 
 **Observations:**
-- Coverage is poor: MSFT and AMZN produced no valid expiration, and only GOOGL had ≥2 expirations, so term slope exists for one name only. The liquidity/strike filters in `main.py` are too strict and need relaxing before this signal is usable cross-sectionally.
-- The "near" expiration differs a lot by ticker (3d for QQQ vs 130d for SPY), so near-skew values are not comparable across names as-is — pick a fixed DTE bucket.
-- QQQ's 3-DTE skew (0.153) is dominated by very short-dated put demand; not representative of 30d skew.
-- GOOGL's skew flips sign with tenor (put premium near-term, call premium far-term).
-- The previous 2026-09-27 table was discarded: it contained yfinance placeholder IVs (e.g. 0.0156) and is not reliable.
+- All six names now have positive put skew at both tenors — normal equity skew.
+- Index ETFs carry the steepest skew (QQQ 6.5, SPY 4.6 vol pts); single names 1–3 vol pts.
+- Skew term structure is mostly downward-sloping (near > far), steepest in QQQ, AMZN, MSFT; the 11-20 expiry includes late-October earnings for the single names.
+- The 2026-09-27 table (yfinance placeholder IVs) was discarded.
 
 ## IC Analysis (Simulated)
 

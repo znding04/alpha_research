@@ -113,3 +113,84 @@ def half_life_of_mean_reversion(data: pd.Series, max_lag: int = 20) -> float:
     half_life = -np.log(2) / np.log(beta) if abs(beta) < 1 and beta != 0 else np.inf
     
     return float(half_life)
+
+
+# ---------------------------------------------------------------------------
+# Forward returns (no look-ahead / no look-back)
+# ---------------------------------------------------------------------------
+
+def signal_as_of(path: str, date_cols=("date", "as_of", "timestamp")) -> pd.Timestamp:
+    """Date a signal snapshot refers to.
+
+    Uses the latest value of a date column in the CSV if one exists, otherwise
+    the file's modification date. The forward-return base is the last close on
+    or before this date, so a snapshot written at 2am Saturday is anchored to
+    Friday's close.
+    """
+    try:
+        df = pd.read_csv(path)
+        for col in date_cols:
+            if col in df.columns:
+                dates = pd.to_datetime(df[col], errors="coerce").dropna()
+                if len(dates):
+                    return dates.max().normalize().tz_localize(None)
+    except Exception:
+        pass
+    import os
+    return pd.Timestamp(os.path.getmtime(path), unit="s").normalize()
+
+
+def _daily_closes(ticker: str, start: pd.Timestamp) -> pd.Series:
+    import yfinance as yf
+    hist = yf.Ticker(ticker).history(start=start.strftime("%Y-%m-%d"), interval="1d")
+    close = hist["Close"].dropna()
+    close.index = pd.DatetimeIndex(close.index.date)
+    return close
+
+
+def forward_return(ticker: str, as_of, days: int = 5) -> float:
+    """Return from the close on/before `as_of` to the close `days` trading days later.
+
+    Returns NaN if those future bars don't exist yet, so a fresh snapshot can
+    never be scored against returns that happened before it.
+    """
+    as_of = pd.Timestamp(as_of).normalize()
+    try:
+        close = _daily_closes(ticker, as_of - pd.Timedelta(days=10))
+    except Exception:
+        return np.nan
+    base = close[close.index <= as_of]
+    future = close[close.index > as_of]
+    if base.empty or len(future) < days:
+        return np.nan
+    return float(future.iloc[days - 1] / base.iloc[-1] - 1)
+
+
+def forward_vol_change(ticker: str, as_of, days: int = 5, rv_window: int = 30) -> float:
+    """Relative change from trailing RV (rv_window days up to `as_of`) to RV over the next `days` trading days.
+
+    Returns NaN if the forward window isn't complete yet.
+    """
+    as_of = pd.Timestamp(as_of).normalize()
+    try:
+        close = _daily_closes(ticker, as_of - pd.Timedelta(days=rv_window * 2))
+    except Exception:
+        return np.nan
+    log_ret = np.log(close / close.shift(1)).dropna()
+    past = log_ret[log_ret.index <= as_of].iloc[-rv_window:]
+    future = log_ret[log_ret.index > as_of]
+    if len(past) < rv_window // 2 or len(future) < days:
+        return np.nan
+    curr_rv = past.std() * np.sqrt(252)
+    fut_rv = future.iloc[:days].std() * np.sqrt(252)
+    return float((fut_rv - curr_rv) / curr_rv) if curr_rv > 0 else np.nan
+
+
+def forward_returns_available(returns: pd.Series, as_of, days: int = 5) -> bool:
+    """Print a notice and return False when no forward returns exist yet for a snapshot."""
+    if returns.notna().any():
+        return True
+    print(f"\n⏳ Forward returns not available yet (signal as of "
+          f"{pd.Timestamp(as_of).date()}, need {days} trading days after it).")
+    print("   Real IC needs daily snapshots pooled over time (compute_ic needs ≥10 observations).")
+    return False
