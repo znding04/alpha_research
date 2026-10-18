@@ -58,22 +58,25 @@ This is a reasonable approximation for liquid large-cap names where IV smile is 
 3. **Liquidity filter** may exclude informative illiquid strikes
 4. **Single snapshot** — cannot compute `skew_change_1d` without history
 
-## Results (2026-09-27)
+## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | Near Skew | Far Skew | Term Slope | N Expirations |
-|--------|-------|-----------|----------|------------|---------------|
-| AAPL   | 341.07 | -0.0134 | 0.0012 | +0.000082 | 5 |
-| SPY    | 771.35 | 0.0067 | 0.0156 | +0.000062 | 8 |
-| QQQ    | 744.50 | 0.0031 | 0.0104 | +0.000051 | 7 |
-| MSFT   | 516.17 | 0.0056 | 0.0148 | +0.000064 | 6 |
-| GOOGL  | 343.92 | 0.0189 | 0.0254 | +0.000045 | 5 |
-| AMZN   | 249.67 | 0.0112 | 0.0198 | +0.000057 | 6 |
+| Ticker | Price | Near Skew (exp, DTE) | Far Skew | Term Slope | N Expirations |
+|--------|-------|----------------------|----------|------------|---------------|
+| AAPL   | 343.46 | +0.0193 (11-27, 39d) | — | — | 1 |
+| SPY    | 763.25 | +0.0172 (02-26, 130d) | — | — | 1 |
+| QQQ    | 709.80 | +0.1533 (10-22, 3d) | — | — | 1 |
+| MSFT   | 529.05 | — | — | — | 0 |
+| GOOGL  | 340.59 | +0.0513 (10-23, 4d) | -0.0580 (04-16, 179d) | -0.000624 | 3 |
+| AMZN   | 250.00 | — | — | — | 0 |
+
+Skew = 25Δ put IV − 25Δ call IV. Raw: `data/iv_skew_latest.csv`.
 
 **Observations:**
-- All tickers show **normal term structure** (positive slope = far-term skew > near-term)
-- AAPL has **negative near-term skew** (call premium > put premium) — unusual, suggests call buying / upside speculation
-- SPY/GOOGL have highest absolute skew levels
-- Term slopes are small but consistently positive across all names
+- Coverage is poor: MSFT and AMZN produced no valid expiration, and only GOOGL had ≥2 expirations, so term slope exists for one name only. The liquidity/strike filters in `main.py` are too strict and need relaxing before this signal is usable cross-sectionally.
+- The "near" expiration differs a lot by ticker (3d for QQQ vs 130d for SPY), so near-skew values are not comparable across names as-is — pick a fixed DTE bucket.
+- QQQ's 3-DTE skew (0.153) is dominated by very short-dated put demand; not representative of 30d skew.
+- GOOGL's skew flips sign with tenor (put premium near-term, call premium far-term).
+- The previous 2026-09-27 table was discarded: it contained yfinance placeholder IVs (e.g. 0.0156) and is not reliable.
 
 ## IC Analysis (Simulated)
 
@@ -83,7 +86,9 @@ With synthetic data (60 days, IC ~ 0.15-0.20):
 - Win rate: ~58%
 - Half-life: ~15 days
 
-**Real IC pending historical data collection.**
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 

@@ -5,7 +5,7 @@ Tests whether the IV spread signal predicts forward returns.
 """
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -41,7 +41,7 @@ def run_ic_analysis():
 
     signal_path = "data/iv_rank_latest.csv"
     if not os.path.exists(signal_path):
-        print(f"❌ No signal data found at {signal_path}. Run alpha_01_iv_rank.py first.")
+        print(f"❌ No signal data found at {signal_path}. Run alpha_01_iv_rank/main.py first.")
         return
 
     df = pd.read_csv(signal_path)

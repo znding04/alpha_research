@@ -78,35 +78,35 @@ This is a more direct proxy for risk-neutral skewness than the moment-based appr
 4. **Moneyness filter (0.80-1.20)** — excludes deep OTM wings where tail risk is most extreme
 5. **OI may be stale** — previous day's OI, not intraday
 
-## Results (2026-10-14)
+## Results (2026-10-16 close)
+
+*Run 2026-10-18 on Friday's closing chains, nearest liquid expiry 2026-10-26 (7 DTE). The 2026-10-14 table was removed because its ATM IVs (0.0156-0.0234) were yfinance placeholders, which invalidated those moments and wing IVs.*
 
 | Ticker | Price | Exp (DTE) | IV Skew | IV Kurt | IV Var | Wing Skew | L-Wing IV | R-Wing IV | ATM IV | N Strikes |
 |--------|-------|-----------|---------|---------|--------|-----------|-----------|-----------|--------|-----------|
-| AAPL   | 341.27 | 2026-10-23 (8) | +2.111 | +8.147 | 0.000815 | +0.0042 | 0.1354 | 0.1313 | 0.0234 | 34 |
-| SPY    | 778.01 | 2026-10-22 (7) | +2.525 | +9.346 | 0.000307 | +0.0052 | 0.0833 | 0.0781 | 0.0156 | 52 |
-| QQQ    | 743.57 | 2026-10-22 (7) | +0.406 | +0.185 | 0.002481 | -0.0182 | 0.1172 | 0.1354 | 0.0156 | 59 |
-| MSFT   | 543.45 | 2026-10-23 (8) | +1.627 | +4.221 | 0.001189 | +0.0066 | 0.1316 | 0.1250 | 0.0156 | 42 |
-| GOOGL  | 353.78 | 2026-10-23 (8) | +1.237 | +2.227 | 0.001725 | +0.0235 | 0.1429 | 0.1193 | 0.0234 | 37 |
-| AMZN   | 258.58 | 2026-10-23 (8) | +1.074 | +1.936 | 0.001925 | +0.0095 | 0.1458 | 0.1364 | 0.0234 | 31 |
+| AAPL   | 343.46 | 2026-10-26 (7) | +5.052 | +36.487 | 0.001818 | +0.2290 | 0.4785 | 0.2494 | 0.2650 | 42 |
+| SPY    | 763.25 | 2026-10-26 (7) | +2.340 | +8.757 | 0.003490 | +0.2140 | 0.3732 | 0.1592 | 0.1328 | 119 |
+| QQQ    | 709.80 | 2026-10-26 (7) | +2.608 | +6.191 | 0.010563 | +0.2454 | 0.4756 | 0.2302 | 0.2235 | 126 |
+| MSFT   | 529.05 | 2026-10-26 (7) | +1.517 | +0.757 | 0.009894 | +0.1048 | 0.4429 | 0.3381 | 0.2746 | 44 |
+| GOOGL  | 340.59 | 2026-10-26 (7) | +3.216 | +15.044 | 0.002370 | +0.1534 | 0.5138 | 0.3604 | 0.3340 | 39 |
+| AMZN   | 250.00 | 2026-10-26 (7) | +1.335 | +0.841 | 0.002335 | +0.1556 | 0.5005 | 0.3449 | 0.3508 | 27 |
 
 **Observations:**
-- All tickers except QQQ show **positive IV skewness** (right-skewed smiles / call wing premium)
-- SPY has the **highest skewness (+2.53)** and **highest kurtosis (+9.35)** — extreme call-wing pricing, potential complacency/FOMO signal
-- QQQ is the **only ticker with negative wing skew (-0.018)** — put wing > call wing, suggesting relatively more downside hedging demand
-- GOOGL has the **largest positive wing skew (+0.0235)** — strongest call wing premium among the group
-- ATM IVs are very low (0.0156-0.0234) across the board — compressed volatility environment
-- High kurtosis values for SPY, AAPL, MSFT indicate **fat-tailed risk-neutral densities** (jump risk priced in)
-- IV variance (dispersion) is highest for QQQ and AMZN — widest smiles relative to ATM
+- **All six have a positive wing skew** (OTM put IV > OTM call IV by 0.10-0.25). This is a normal equity put skew, which reverses the earlier "call wing premium" reading that came from placeholder data.
+- QQQ (+0.245) and AAPL (+0.229) have the steepest put wings. MSFT is the flattest (+0.105).
+- The **moment skewness is positive for all**: the cross-strike IV distribution has a long right tail, driven by a few very high far-OTM put IVs.
+- ⚠️ **AAPL kurtosis (36.5) and GOOGL kurtosis (15.0) are outliers**, likely driven by one or two far-wing strikes. At 7 DTE the moments are sensitive to strike coverage (27-126 strikes), so trimming or a vega/delta-weighted version is advisable before IC testing.
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, target IC ~ 0.10-0.15):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - Rolling IC mean: ~0.12
 - Information Ratio: ~0.8
 - Win rate: ~55%
 - Half-life: ~10-15 days
-
-**Real IC pending historical data collection.**
 
 ## Next Steps
 

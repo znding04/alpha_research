@@ -63,32 +63,36 @@
 - Weight by volume/OI within each expiration, then aggregate
 - Normalize spreads by ATM IV to make cross-sectional comparable
 
-## Results (2026-10-09)
+## Results (2026-10-16 close)
 
-| Ticker | Price | Exps | Vol Ratio | Vol IV Spread | Norm Spread | Median Spread |
-|--------|-------|------|-----------|---------------|-------------|---------------|
-| AAPL   | 340.42 | 3 | 0.738 | 0.0894 | 5.718 | 0.1250 |
-| SPY    | 773.93 | 2 | 2.142 | 0.0222 | 1.419 | 0.0625 |
-| QQQ    | 747.58 | 1 | 1.842 | 0.0617 | 3.947 | 0.0156 |
-| MSFT   | 522.61 | 3 | 0.453 | 0.0587 | 3.753 | 0.1562 |
-| GOOGL  | 348.29 | 3 | 0.542 | 0.0076 | 0.487 | 0.0000 |
-| AMZN   | 254.06 | 3 | 0.615 | 0.0025 | 0.161 | 0.1250 |
+*Run 2026-10-18 on Friday's closing chains, nearest 3 expirations. Spreads are put IV minus call IV. Norm = spread / ATM IV.*
+
+| Ticker | Price | ATM IV | P/C OI Ratio | P/C Vol Ratio | OI IV Spread (norm) | Vol IV Spread (norm) | Median Spread |
+|--------|-------|--------|--------------|---------------|---------------------|----------------------|---------------|
+| AAPL   | 343.46 | 0.2714 | 0.811 | 1.371 | 0.1430 (0.527) | 0.0118 (0.043) | -0.0029 |
+| SPY    | 763.25 | 0.1346 | 1.224 | 1.061 | 0.0783 (0.582) | 0.0761 (0.565) | 0.0531 |
+| QQQ    | 709.80 | 0.2298 | 1.828 | 1.774 | 0.1704 (0.741) | 0.1227 (0.534) | 0.0459 |
+| MSFT   | 529.05 | 0.3804 | 0.417 | 0.627 | 0.0576 (0.151) | 0.0408 (0.107) | -0.0351 |
+| GOOGL  | 340.59 | 0.4389 | 1.132 | 0.509 | 0.0083 (0.019) | 0.0343 (0.078) | -0.0251 |
+| AMZN   | 250.00 | 0.3927 | 0.340 | 0.946 | 0.0585 (0.149) | 0.0149 (0.038) | 0.0226 |
 
 **Observations:**
-- **SPY & QQQ**: Put-heavy volume (ratio > 1.8) — index hedging demand
-- **AAPL, MSFT, GOOGL, AMZN**: Call-heavy volume (ratio 0.45-0.74) — single-stock speculation
-- **Normalized spreads** vary widely (0.16 to 9.04) due to low ATM IV (0.0156) denominator
-- **Median IV spread** shows put premium for most names (positive skew)
+- **Indices are put-heavy:** QQQ has the highest P/C ratios (OI 1.83, volume 1.77) and the largest put premium (OI-weighted spread 0.170). SPY is put-heavy too (OI 1.22).
+- **MSFT and AMZN are call-heavy by OI** (0.42 and 0.34), consistent with single-stock call speculation.
+- **AAPL put volume is elevated** (vol ratio 1.37) even though OI is call-leaning. Whether this is fresh hedging is worth tracking day over day.
+- OI-weighted spreads are positive for all names (puts richer than calls). The median spread is negative for AAPL, MSFT and GOOGL, so the put premium sits in the high-OI OTM strikes rather than across the whole chain.
+- Normalized spreads are now sane (0.02-0.74). The 2026-10-09 values of 0.16-9.04 came from dividing by the 0.0156 placeholder ATM IV, and that table has been removed.
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, put/call vol ratio mean-reversion dynamics):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - Rolling IC mean: ~-0.15 to -0.20 (negative: high put ratio → positive returns)
 - Information Ratio: ~1.0-1.3
 - Win rate: ~55-60%
 - Half-life: ~10-15 days
-
-**Real IC pending historical data collection.**
 
 ## Next Steps
 

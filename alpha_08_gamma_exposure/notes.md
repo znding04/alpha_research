@@ -84,9 +84,20 @@ Sort strikes by price, compute cumulative GEX. Flip strike = first strike where 
 5. **Excludes non-listed / OTC / index options** — SPY/SPX gamma differs; QQQ/NDX similar
 6. **Market hours bias** — After-hours OI/gamma may be stale
 
-## Results (2026-10-03)
+## Results (2026-10-16 close, run 2026-10-18)
 
-*Pending first run of main.py*
+| Ticker | Price | Total Dealer GEX ($/1%) | ATM Strike GEX | Zero-Gamma Flip | Expirations |
+|--------|-------|-------------------------|----------------|-----------------|-------------|
+| AAPL   | 343.46 | -1.05e9 | -2.64e7 | N/A | 9 |
+| SPY    | 763.25 | -2.08e10 | -2.15e8 | N/A | 13 |
+| QQQ    | 709.80 | -1.10e10 | -6.79e8 | N/A | 13 |
+| MSFT   | 529.05 | -1.04e9 | -7.14e7 | N/A | 8 |
+| GOOGL  | 340.59 | -5.38e8 | -4.15e7 | N/A | 8 |
+| AMZN   | 250.00 | -6.36e8 | -6.98e7 | N/A | 9 |
+
+Raw per-strike GEX: `data/gamma_exposure_latest.csv`.
+
+**⚠️ Results invalid — sign-convention bug.** All 1,024 strike-level GEX values are negative, so every name reads "Short Gamma" and no zero-gamma flip can ever be found. In `main.py` (~line 117) both calls *and* puts are multiplied by −1 (`dealer_gex = -gex`). The standard convention (dealers long customer-sold calls, short customer-bought puts) is **call GEX = +, put GEX = −**. Until that is fixed, total GEX and flip strike are meaningless; the magnitudes are just −(total gamma notional).
 
 ## IC Analysis (Simulated)
 
@@ -97,7 +108,11 @@ With synthetic data (60 days, negative correlation between GEX and returns/vol):
 - **Win rate**: ~52-58%
 - **Half-life**: ~15-20 days
 
-**Interpretation**: Negative GEX (dealer short gamma) predicts vol expansion and negative returns in stress periods. Real IC pending historical data collection.
+**Interpretation**: Negative GEX (dealer short gamma) predicts vol expansion and negative returns in stress periods.
+
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 

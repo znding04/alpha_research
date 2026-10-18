@@ -70,22 +70,22 @@ This avoids single-strike noise and captures the "smile" around ATM.
 4. **Single expiration per day** — term structure effects not captured
 5. **Earnings/events** can cause temporary IV spikes not mean-reverting
 
-## Results (2026-09-30 — Initial Run)
+## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | ATM IV | IV Pctile | Z-Score | Hist Range | Obs | Signal |
 |--------|-------|--------|-----------|---------|------------|-----|--------|
-| AAPL   | 329.40 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
-| SPY    | 764.20 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
-| QQQ    | 737.93 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
-| MSFT   | 508.96 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
-| GOOGL  | 340.92 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
-| AMZN   | 246.67 | 0.0156 | N/A | N/A | N/A | 1 | ⏳ Building history... |
+| AAPL   | 343.46 | 0.3192 | 99.6% | 2.96 | 0.139 – 0.353 | 262 | 🔴 High IV |
+| SPY    | 763.25 | 0.1547 | 56.9% | 0.14 | 0.057 – 0.246 | 262 | ⚪ Neutral |
+| QQQ    | 709.80 | 0.2411 | 88.2% | 1.26 | 0.119 – 0.292 | 262 | 🔴 High IV |
+| MSFT   | 529.05 | 0.3725 | 99.6% | 5.36 | 0.129 – 0.373 | 262 | 🔴 High IV |
+| GOOGL  | 340.59 | 0.4328 | 100.0% | 5.05 | 0.150 – 0.433 | 262 | 🔴 High IV |
+| AMZN   | 250.00 | 0.4751 | 100.0% | 6.00 | 0.125 – 0.475 | 262 | 🔴 High IV |
 
-**Observations:**
-- First run — all tickers have only 1 observation (today)
-- Percentile/Z-score will be NaN until ≥10 observations accumulated
-- After ~30 days: initial percentiles become meaningful
-- After ~60 days: robust enough for IC testing
+Raw: `data/iv_rank_percentile_latest.csv`. The 2026-09-30 table (0.0156 placeholder IVs, 1 obs) was discarded.
+
+**⚠️ These percentiles are not meaningful yet.** `data/iv_history.json` holds 261 entries per ticker, but **260 of them are synthetic** (`price: 0`, generated to backfill a year) and only 1 is a real snapshot. The percentile/z-score above therefore ranks one real IV against a made-up distribution. The z-scores of 5–6 for MSFT/GOOGL/AMZN mostly say the synthetic history was too tight, plus those names have earnings inside the sampled expiry (see alpha_04 notes).
+
+**To make this real:** drop the synthetic backfill, collect daily real ATM IV snapshots (≥60 for a usable percentile, ~252 for a true 1-year IV rank), and use a fixed 30d tenor ex-earnings.
 
 ## IC Analysis (Simulated)
 
@@ -95,7 +95,9 @@ With synthetic data (60 days, mean-reverting IV percentile vs forward returns):
 - Win rate: ~ 58% (for mean-reversion direction)
 - Half-life: ~ 15 days
 
-**Real IC pending historical data collection (need ≥30 daily snapshots).**
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 

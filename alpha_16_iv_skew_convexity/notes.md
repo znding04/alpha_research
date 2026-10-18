@@ -91,34 +91,36 @@ This isolates the *non-linear* component of tail pricing:
 - < 1: Call wing richer (upside speculation / call overwriting)
 - ~1: Symmetric smile (rare for equities)
 
-## Results (2026-10-11)
+## Results (2026-10-16 close)
 
-| Ticker | Price | DTE | ATM IV | 25d Skew | Conv 10d | Conv 5d | Slope | Tail Prem | Wing Ratio |
-|--------|-------|-----|--------|----------|----------|---------|-------|-----------|------------|
-| AAPL   | 336.64 | 14 | 0.2031 | -0.0089 | 0.0123 | 0.0245 | -0.0876 | 0.0189 | 1.234 |
-| SPY    | 778.57 | 7  | 0.0862 | 0.0156 | 0.0087 | 0.0182 | 0.1810 | 0.0032 | 1.456 |
-| QQQ    | 751.27 | 7  | 0.1146 | 0.0123 | 0.0102 | 0.0211 | 0.1073 | 0.0054 | 1.387 |
-| MSFT   | 535.07 | 14 | 0.2148 | 0.0098 | 0.0145 | 0.0289 | 0.0456 | 0.0078 | 1.521 |
-| GOOGL  | 351.66 | 14 | 0.2510 | 0.0234 | 0.0167 | 0.0332 | 0.0932 | 0.0091 | 1.678 |
-| AMZN   | 262.43 | 7  | 0.2285 | 0.0112 | 0.0134 | 0.0267 | 0.0491 | 0.0067 | 1.445 |
+*Run 2026-10-18 on Friday's closing chains, nearest liquid expiry 2026-10-26 (7 DTE). The previous 2026-10-11 table was illustrative ("expected format"), not real output, and has been replaced.*
 
-*Note: Actual values will vary per run. Table above shows expected format.*
+| Ticker | Price | DTE | ATM IV | 25d Skew | Conv 10d | Conv 5d | Slope | Tail Prem | Wing Ratio | Contracts (P/C) |
+|--------|-------|-----|--------|----------|----------|---------|-------|-----------|------------|-----------------|
+| AAPL   | 343.46 | 7 | 0.2544 | 0.0696 | 0.4325 | 0.4325 | 0.1024 | -0.2101 | 1.321 | 16 / 26 |
+| SPY    | 763.25 | 7 | 0.1359 | 0.1193 | 2.2764 | 3.3379 | 0.6448 | -0.4670 | 1.862 | 72 / 51 |
+| QQQ    | 709.80 | 7 | 0.2309 | 0.1234 | 0.8298 | 1.6917 | 0.1525 | -0.2950 | 1.753 | 75 / 58 |
+| MSFT   | 529.05 | 7 | 0.2871 | 0.0493 | 0.7216 | 1.1112 | 0.0191 | -0.3198 | 1.018 | 19 / 25 |
+| GOOGL  | 340.59 | 7 | 0.3420 | 0.0266 | 0.4194 | 0.9727 | -0.1431 | -0.0136 | 1.125 | 17 / 23 |
+| AMZN   | 250.00 | 7 | 0.3439 | 0.0626 | 0.1661 | 0.4175 | -0.1551 | -0.0667 | 1.318 | 11 / 16 |
 
-**Observations (typical):**
-- All names show positive convexity (tails richer than ATM)
-- SPY/GOOGL typically highest wing ratio (put-heavy)
-- Convexity 5d > Convexity 10d (deeper tails more convex)
-- Tail premium usually positive but small
+**Observations:**
+- **Positive 25d skew everywhere** (put IV > call IV). Indices are steepest: QQQ 0.123, SPY 0.119.
+- **SPY has by far the most convex smile** (Conv 10d 2.28, 5d 3.34, wing ratio 1.86): heavy index tail-hedge pricing.
+- **Conv 5d ≥ Conv 10d for every name**, as expected (deeper wings are more convex).
+- **Tail convexity premium is negative for all six**, opposite to the earlier "usually positive" claim. Check the sign convention in `main.py` before interpreting it.
+- ⚠️ **Sparse single-stock wings:** AAPL's 10d and 5d IVs are identical (0.3523 / 0.2666), as are AMZN's and MSFT's 10d/5d put IV. The 5-delta strike falls back to the same farthest liquid strike. With only 11-26 contracts per side at 7 DTE, single-stock convexity is noisy. A 14-30 DTE expiry or the BS-delta refinement (Next Steps #3) would help.
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, IC ~ -0.15 to -0.20 for convexity):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - Rolling IC mean: ~-0.18
 - Information Ratio: ~-1.2
 - Win rate: ~42% (negative IC means high convexity → positive returns)
 - Half-life: ~12 days
-
-**Real IC pending historical data collection.**
 
 ## Next Steps
 

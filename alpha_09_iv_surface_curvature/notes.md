@@ -88,9 +88,26 @@ Where `m = ln(K/S)` = log moneyness.
 5. **Moneyness window fixed** — 30% may be too wide/narrow for some tickers
 6. **Call/put asymmetry** — Averaging assumes symmetric smile; puts often steeper
 
-## Results (2026-10-04)
+## Results (2026-10-16 close, run 2026-10-18)
 
-*Pending first run of main.py*
+Expiration used: 2026-10-26 (7 DTE) for all tickers.
+
+| Ticker | Price | ATM IV | Skew (linear) | Curvature (raw) | Norm. Curvature | Butterfly (25d) | Fit R² | Points |
+|--------|-------|--------|---------------|-----------------|-----------------|-----------------|--------|--------|
+| AAPL   | 343.46 | 0.2588 | -0.7026 | 15.06 | 58.20 | 0.3389 | 0.84 | 42 |
+| SPY    | 763.25 | 0.1350 | -1.7507 | 13.35 | 98.90 | 0.3004 | 0.97 | 122 |
+| QQQ    | 709.80 | 0.2399 | -1.1213 | 14.23 | 59.30 | 0.3201 | 0.93 | 128 |
+| MSFT   | 529.05 | 0.2749 | -0.6218 | 12.69 | 46.16 | 0.2855 | 0.90 | 44 |
+| GOOGL  | 340.59 | 0.3164 | -0.6903 | 14.94 | 47.22 | 0.3361 | 0.92 | 40 |
+| AMZN   | 250.00 | 0.3212 | -0.3715 | 1.79 | 5.56 | 0.0402 | 0.32 | 27 |
+
+Raw: `data/iv_surface_curvature_latest.csv`.
+
+**Observations:**
+- Negative linear skew and positive curvature for all names (normal equity smile).
+- SPY has the steepest skew and highest normalized curvature, consistent with index put demand.
+- AMZN's fit is poor (R² 0.32, only 27 points) — its curvature/butterfly values are not reliable this run.
+- **Suspicious:** butterfly (25d) values of ~0.30–0.34 vol points are implausibly large for a 7-DTE smile (typical 25Δ fly is a few vol points). Likely the 25Δ strikes are being approximated too far OTM at short DTE, or the fly is computed from the fitted quadratic far outside the data. Every name is also labelled "High Curvature", so the classification threshold is uncalibrated. Check the 25Δ strike mapping and use a ~30 DTE expiry.
 
 ## IC Analysis (Simulated)
 
@@ -100,7 +117,11 @@ With synthetic data (60 days, mild positive correlation between curvature and re
 - Win rate: ~52-55%
 - Half-life: ~15-20 days
 
-**Interpretation**: Weak positive IC expected (curvature as fear gauge → mean reversion). Real IC pending historical data collection.
+**Interpretation**: Weak positive IC expected (curvature as fear gauge → mean reversion).
+
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 

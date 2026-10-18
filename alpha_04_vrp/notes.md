@@ -74,18 +74,23 @@ Negative VRP = realized vol exceeded implied (rare, stress periods).
 4. **ATM IV only** — Doesn't capture skew/smile information
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 
-## Results (2026-09-29)
+## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | ATM IV | Realized Vol | VRP (IV²-RV²) | VRP Ratio |
-|--------|-------|--------|--------------|---------------|-----------|
-| AAPL   | 338.40 | 0.0156 | — | — | — |
-| SPY    | 765.61 | 0.0156 | — | — | — |
-| QQQ    | 736.53 | 0.0156 | — | — | — |
-| MSFT   | 509.22 | 0.0156 | — | — | — |
-| GOOGL  | 342.75 | 0.0313 | — | — | — |
-| AMZN   | 246.15 | 0.0156 | — | — | — |
+| Ticker | Price | ATM IV | Realized Vol (30d) | VRP (IV²-RV²) | VRP (vol pts) | VRP Ratio (IV²/RV²) |
+|--------|-------|--------|--------------------|---------------|---------------|---------------------|
+| AAPL   | 343.46 | 0.3192 | 0.1978 | +0.0627 | 0.2505 | 2.60 |
+| SPY    | 763.25 | 0.1547 | 0.1015 | +0.0136 | 0.1167 | 2.32 |
+| QQQ    | 709.80 | 0.2411 | 0.1680 | +0.0299 | 0.1728 | 2.06 |
+| MSFT   | 529.05 | 0.3725 | 0.2222 | +0.0894 | 0.2990 | 2.81 |
+| GOOGL  | 340.59 | 0.4328 | 0.2353 | +0.1320 | 0.3633 | 3.38 |
+| AMZN   | 250.00 | 0.4751 | 0.2357 | +0.1701 | 0.4125 | 4.06 |
 
-*Data pending: Running main.py to populate realized vol and VRP*
+Raw: `data/vrp_latest.csv`. The 2026-09-29 table (ATM IV = 0.0156 placeholders, no RV) was discarded.
+
+**Observations:**
+- VRP is positive for every name (IV > RV), as expected for the variance risk premium.
+- Cross-sectional ranking: AMZN > GOOGL > MSFT > AAPL > QQQ > SPY.
+- **Earnings contamination:** the ATM IV comes from the nearest expiration in 14–60 DTE, which for AMZN/GOOGL/MSFT/AAPL straddles their late-October earnings. Their elevated VRP largely reflects the earnings event premium, not a steady-state VRP. The index ETFs (SPY, QQQ) are the cleanest readings. Fix: skip expirations that contain an earnings date, or use a fixed 30d interpolated IV ex-event.
 
 ## IC Analysis (Simulated)
 
@@ -95,11 +100,15 @@ With synthetic data (60 days, positive correlation between VRP and returns):
 - Win rate: ~55-60%
 - Half-life: ~10-15 days
 
-**Interpretation**: Positive IC expected (earning the variance risk premium). Real IC pending historical data collection.
+**Interpretation**: Positive IC expected (earning the variance risk premium).
+
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 
-1. **Fix ATM IV values** — Current ATM IVs seem too low (0.0156 = 1.56%), likely picking up near-zero IV from illiquid options. Need better liquidity filtering or different strike selection.
+1. ~~**Fix ATM IV values**~~ — Resolved: 2026-10-16 run gives sensible ATM IVs (0.15–0.48). The 0.0156 values were yfinance placeholders. Remaining issue: earnings-event contamination (see Observations).
 
 2. **Build historical database** — Run `main.py` daily via cron to accumulate VRP time series
 

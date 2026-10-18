@@ -74,24 +74,30 @@ vol_of_vol = iv_returns.rolling(20).std() * sqrt(252)
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 6. **Cross-sectional only 6 tickers** — Small universe limits statistical power for IC
 
-## Results (2026-10-06)
+## Results (2026-10-16 close)
 
-*First run — building history*
+*Run 2026-10-18 on Friday's closing chains. VoV not computed: the script printed "No valid data" because it needs 20 days of ATM IV history and only 2 snapshots exist.*
 
 | Ticker | Price | ATM IV | VoV (20d) | VoV Change | VoV Pctile |
 |--------|-------|--------|-----------|------------|------------|
-| AAPL   | —     | —      | —         | —          | —          |
-| SPY    | —     | —      | —         | —          | —          |
-| QQQ    | —     | —      | —         | —          | —          |
-| MSFT   | —     | —      | —         | —          | —          |
-| GOOGL  | —     | —      | —         | —          | —          |
-| AMZN   | —     | —      | —         | —          | —          |
+| AAPL   | 343.46 | 0.3192 | n/a (2/20 days) | n/a | n/a |
+| SPY    | 763.25 | 0.1547 | n/a | n/a | n/a |
+| QQQ    | 709.80 | 0.2411 | n/a | n/a | n/a |
+| MSFT   | 529.05 | 0.3725 | n/a | n/a | n/a |
+| GOOGL  | 340.59 | 0.4328 | n/a | n/a | n/a |
+| AMZN   | 250.00 | 0.4751 | n/a | n/a | n/a |
 
-*Data pending: Running main.py to populate history*
+**Observations:**
+- ATM IVs (14-60 DTE, liquidity-weighted ±5% moneyness) look sensible: SPY lowest (0.15), AMZN/GOOGL highest (0.48/0.43).
+- **History is not usable yet:** the only earlier snapshot (2026-10-06) has placeholder IVs of about 0.02-0.04. That row should be dropped, so effectively 0 of 20 valid days have accumulated.
+- VoV needs about 20 clean trading days of daily snapshots before the first value.
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, negative correlation between VoV and returns, positive with vol change):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - **VoV → Returns IC**: ~ -0.15 to -0.25 (high VoV predicts lower returns)
 - **VoV → Vol Change IC**: ~ +0.20 to +0.35 (high VoV predicts rising vol)
 - **Rolling IC mean**: ~ -0.10 (returns) / +0.20 (vol change)
@@ -99,7 +105,7 @@ With synthetic data (60 days, negative correlation between VoV and returns, posi
 - **Win rate**: ~ 52-58%
 - **Half-life**: ~ 15-25 days
 
-**Interpretation**: Negative IC for returns expected (high VoV = risk-off = lower returns). Positive IC for vol change expected (high VoV = vol clustering). Real IC pending historical data collection (need 20+ days of daily snapshots).
+**Interpretation**: Negative IC for returns expected (high VoV = risk-off = lower returns). Positive IC for vol change expected (high VoV = vol clustering). (hypothesis, untested)
 
 ## Next Steps
 

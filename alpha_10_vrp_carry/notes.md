@@ -76,39 +76,39 @@ VRP is computed in **variance space** (IV² - RV²), not vol space (IV - RV), be
 4. **IV smoothing** — ATM IV per expiration has noise; could fit parametric surface (SVI)
 5. **Liquidity filter** may exclude informative illiquid expiries
 
-## Results (2026-10-05)
+## Results (2026-10-16 close)
+
+*Run 2026-10-18 on Friday's closing chains. RV = 20-day close-to-close, annualized.*
 
 | Ticker | Price | RV(20d) | Near DTE | Far DTE | Near IV | Far IV | Near VRP | Far VRP | VRP Carry | Roll-down/day | Carry Ratio |
 |--------|-------|---------|----------|---------|---------|--------|----------|---------|-----------|---------------|-------------|
-| AAPL   | 333.69 | 0.2309 | 6 | 164 | 0.0156 | 0.0156 | -0.0531 | -0.0531 | 0.0000 | -0.0000 | -0.0000 |
-| SPY    | 769.64 | 0.1036 | 6 | 176 | 0.0156 | 0.0156 | -0.0105 | -0.0105 | 0.0000 | -0.0000 | -0.0000 |
-| QQQ    | 749.58 | 0.1531 | 6 | 176 | 0.0156 | 0.0156 | -0.0232 | -0.0232 | 0.0000 | -0.0000 | -0.0000 |
-| MSFT   | 517.53 | 0.2236 | 6 | 164 | 0.0156 | 0.0156 | -0.0498 | -0.0498 | 0.0000 | -0.0000 | -0.0000 |
-| GOOGL  | 343.50 | 0.2597 | 6 | 164 | 0.0156 | 0.0156 | -0.0672 | -0.0672 | 0.0000 | -0.0000 | -0.0000 |
-| AMZN   | 251.52 | 0.2137 | 6 | 164 | 0.0156 | 0.0156 | -0.0454 | -0.0454 | 0.0000 | -0.0000 | -0.0000 |
+| AAPL   | 343.46 | 0.1620 | 7 | 179 | 0.2726 | 0.3130 | 0.0481 | 0.0717 | -0.0237 | -0.000138 | -0.492 |
+| SPY    | 763.25 | 0.1047 | 7 | 163 | 0.1394 | 0.1894 | 0.0085 | 0.0249 | -0.0165 | -0.000106 | -1.944 |
+| QQQ    | 709.80 | 0.1856 | 7 | 163 | 0.2278 | 0.2587 | 0.0175 | 0.0325 | -0.0151 | -0.000097 | -0.863 |
+| MSFT   | 529.05 | 0.2234 | 7 | 179 | 0.2884 | 0.3400 | 0.0333 | 0.0657 | -0.0324 | -0.000189 | -0.975 |
+| GOOGL  | 340.59 | 0.2263 | 7 | 179 | 0.3261 | 0.4003 | 0.0551 | 0.1090 | -0.0540 | -0.000314 | -0.979 |
+| AMZN   | 250.00 | 0.2439 | 7 | 179 | 0.3065 | 0.4128 | 0.0345 | 0.1109 | -0.0765 | -0.000445 | -2.219 |
 
 **Observations:**
-- **All ATM IVs identical (0.0156)** — yfinance returns placeholder IVs; no term structure visible
-- VRP varies only by realized vol (RV): GOOGL highest (-0.067), SPY lowest (-0.010)
-- All VRP negative (RV > IV) — market pricing less uncertainty than recently realized
-- **VRP carry = 0 for all** — flat IV term structure eliminates carry signal
-- **Data quality limitation**: yfinance IV data insufficient for term structure analysis
-- Need alternative IV data source (Polygon, CBOE, or broker API) for this signal to work
+- **Data issue resolved for this run** — IVs are real and differ across expirations (near 0.14-0.33, far 0.19-0.41). The earlier 0.0156 values were yfinance placeholders. The placeholder problem can recur (it hit the 2026-10-05 run), so outputs still need an IV sanity check before use.
+- **VRP positive everywhere** (IV > RV at both tenors), unlike the 2026-10-05 table, whose negative VRPs came from placeholder IVs.
+- **All six names in contango** (negative carry): no backwardation / near-term fear signal today.
+- AMZN has the steepest VRP term structure (carry -0.077), QQQ the flattest (-0.015).
+- **Carry ratio is unstable** when near VRP is small: SPY (-1.94) and AMZN (-2.22) are large mostly because their near VRP is small.
+- Single snapshot: `Δcarry_1d` and real IC need accumulated history.
 
-**Action Required**: This signal requires proper IV term structure data. With current yfinance data, the signal is non-functional. Consider:
-1. Using a paid options data provider (Polygon.io, CBOE LiveVol)
-2. Computing IV from mid-prices using Black-Scholes (yfinance gives lastPrice, bid, ask)
-3. Focusing on signals that work with flat IV (e.g., IV Rank, VRP level vs RV)
+*2026-10-05 results removed: every IV was the 0.0156 placeholder, so all VRP/carry values were invalid.*
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, target IC ~ 0.15-0.25):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - Rolling IC mean: ~0.20
 - Information Ratio: ~1.3
 - Win rate: ~58%
 - Half-life: ~12 days
-
-**Real IC pending historical data collection.**
 
 ## Next Steps
 

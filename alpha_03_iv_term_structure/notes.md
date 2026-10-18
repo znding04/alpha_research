@@ -62,24 +62,25 @@ Units: IV points per day. Typical range: -0.005 to +0.005.
 4. **Single snapshot** — Cannot compute slope change without history
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 
-## Results (2026-09-28)
+## Results (2026-10-16 close, run 2026-10-18)
 
-| Ticker | Price | Near IV (DTE) | Far IV (DTE) | Term Slope | Curvature | N Exp |
-|--------|-------|---------------|--------------|------------|-----------|-------|
-| AAPL   | 341.07 | — | — | — | — | <2 |
-| SPY    | 771.35 | — | — | — | — | <2 |
-| QQQ    | 744.50 | — | — | — | — | <2 |
-| MSFT   | 516.17 | — | — | — | — | <2 |
-| GOOGL  | 343.92 | 0.0156 (6d) | 0.0313 (38d) | +0.000488 | N/A | 2 |
-| AMZN   | 249.67 | 0.0156 (8d) | 0.0156 (143d) | 0.000000 | N/A | 2 |
+| Ticker | Price | Near IV (DTE) | Far IV (DTE) | Term Slope (/day) | Curvature | N Exp |
+|--------|-------|---------------|--------------|-------------------|-----------|-------|
+| AAPL   | 343.46 | 0.2514 (0d) | 0.2767 (179d) | +0.000142 | -1.60e-05 | 15 |
+| SPY    | 763.25 | 0.1390 (0d) | 0.1616 (163d) | +0.000138 | -4.5e-07 | 22 |
+| QQQ    | 709.80 | 0.2366 (0d) | 0.2275 (163d) | -0.000056 | -8.7e-07 | 20 |
+| MSFT   | 529.05 | 0.2434 (0d) | 0.3098 (179d) | +0.000371 | -3.87e-05 | 13 |
+| GOOGL  | 340.59 | 0.3185 (0d) | 0.3621 (179d) | +0.000244 | -1.60e-05 | 14 |
+| AMZN   | 250.00 | 0.2871 (0d) | 0.3724 (179d) | +0.000476 | -6.39e-05 | 15 |
+
+Raw per-expiration ATM IVs: `data/iv_term_structure_latest.csv`.
 
 **Observations:**
-- Only GOOGL and AMZN had ≥2 liquid expirations with valid ATM IV
-- GOOGL shows **normal contango** (positive slope = IV rises with time)
-- AMZN shows **flat term structure** (near IV ≈ far IV despite large DTE gap)
-- AAPL, SPY, QQQ, MSFT had insufficient liquid expirations (likely due to strict liquidity filter)
-
-**Liquidity filter issue**: Current filter `(volume > 10 or OI > 100)` per leg may be too strict for calls on some names. Consider relaxing or using combined call+put liquidity.
+- All 6 tickers now have full term structures (13–22 expirations); the earlier "<2 expirations" problem and the 0.0156 placeholder IVs from the 2026-09-28 run are gone (that table was discarded).
+- Contango for 5/6 names; QQQ is the only name in mild backwardation (slope < 0).
+- AMZN, GOOGL and MSFT show a clear IV hump at the 10-30 expiry (AMZN 0.52, GOOGL 0.48, MSFT 0.41 vs ~0.30–0.37 elsewhere) — earnings events sitting in that expiry. This distorts slope/curvature; earnings expirations should be excluded or event-vol stripped.
+- "Near" = 0 DTE because the run was on a weekend (next expiry 10-19). 0-DTE IV is noisy; use a minimum DTE (e.g. ≥7d) for the near leg.
+- All names classified FLAT by the script's thresholds — thresholds may need recalibration to the per-day slope scale.
 
 ## IC Analysis (Simulated)
 
@@ -89,7 +90,11 @@ With synthetic data (60 days, negative correlation between slope and returns):
 - Win rate: ~ 55-60%
 - Half-life: ~ 10-15 days
 
-**Interpretation**: Negative IC expected (backwardation → bounce). Real IC pending historical data collection.
+**Interpretation**: Negative IC expected (backwardation → bounce).
+
+**⚠️ These are synthetic demo numbers, not evidence of predictive power.** `simulate_rolling_ic()` generates returns as `signal * k + noise`, so a positive/negative IC is baked in by construction. Separately, `run_ic_analysis()` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and cannot test predictability.
+
+**Real IC: not yet measured.** Requires daily signal snapshots (≥30–60 trading days) paired with true forward returns.
 
 ## Next Steps
 

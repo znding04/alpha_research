@@ -45,7 +45,7 @@ All signals are computed from live yfinance option chains. Because yfinance prov
 
 **Key Parameters**: +/-2% moneyness for ATM, 180-day max expiry, 10-contract minimum
 
-**Backtest Status**: Synthetic IC = +0.293, IR = 2.60. Real IC from `alpha_01_ic_analysis.py` uses single-snapshot Spearman + synthetic rolling IC simulation (window=20, seed=101).
+**Backtest Status**: Synthetic IC = +0.293, IR = 2.60. Real IC from `alpha_01_iv_rank/ic_analysis.py` uses single-snapshot Spearman + synthetic rolling IC simulation (window=20, seed=101).
 
 ---
 

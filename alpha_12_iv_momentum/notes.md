@@ -71,31 +71,35 @@ Since yfinance provides noisy near-ATM IVs (often near-zero due to bid/ask artif
 4. **5-day lookback** — May be noisy; 10-20 day lookbacks also worth testing
 5. **Forward returns** — Current IC analysis uses realized forward returns (look-ahead for testing only)
 
-## Results (2026-10-07, Initial Run)
+## Results (2026-10-16 close)
+
+*Run 2026-10-18 on Friday's closing chains (nearest liquid expiry 2026-10-26, 7 DTE).*
 
 | Ticker | Price | ATM IV | Exp | History | Momentum |
 |--------|-------|--------|-----|---------|----------|
-| AAPL   | 333.63 | 6.25% | 2026-10-16 | 3 days | Building |
-| SPY    | 779.09 | 6.25% | 2026-10-15 | 3 days | Building |
-| QQQ    | 759.66 | 6.25% | 2026-10-15 | 3 days | Building |
-| MSFT   | 529.30 | 6.25% | 2026-10-16 | 3 days | Building |
-| GOOGL  | 347.68 | 6.25% | 2026-10-16 | 3 days | Building |
-| AMZN   | 256.29 | 6.25% | 2026-10-16 | 3 days | Building |
+| AAPL   | 343.46 | 25.59% | 2026-10-26 | 0 valid days | Building |
+| SPY    | 763.25 | 13.27% | 2026-10-26 | 0 valid days | Building |
+| QQQ    | 709.80 | 22.35% | 2026-10-26 | 0 valid days | Building |
+| MSFT   | 529.05 | 27.27% | 2026-10-26 | 0 valid days | Building |
+| GOOGL  | 340.59 | 32.61% | 2026-10-26 | 0 valid days | Building |
+| AMZN   | 250.00 | 35.08% | 2026-10-26 | 0 valid days | Building |
 
 **Observations:**
-- All tickers show identical ATM IV (6.25%) — suggests yfinance IV surface is coarse/quantized
-- History building: 3 days accumulated (need 6+ days for 5-day momentum)
-- Expiration dates differ slightly (SPY/QQQ 10/15, others 10/16)
+- ATM IVs are real now: they differ by ticker and look plausible. The 2026-10-07 identical 6.25% values were yfinance placeholders, not a "quantized" surface.
+- **No momentum yet:** `data/iv_momentum_history.json` holds 3 entries per ticker, all dated 2026-10-07 and all at the 0.0625 placeholder. The history needs to be rebuilt from clean daily snapshots.
+- This run's history append was intentionally reverted: it was dated Sunday 2026-10-18 but held Friday's data, which would have created a duplicate.
+- 5-day momentum needs 6+ clean trading days, and the z-score needs about 20-60.
 
-## IC Analysis (Simulated)
+## IC Analysis
 
-With synthetic data (60 days, negative IV momentum → positive returns correlation):
+**Real IC: not yet measurable.** A real forward IC needs a daily snapshot history of this signal (≥30-60 trading days), each snapshot paired with returns realized *after* it. The current `ic_analysis.py` correlates today's signal with the *past* 5-day return (`Close[-6] → Close[-1]`), which is not a forward IC and is not evidence of predictive power.
+
+**Synthetic demo only (not evidence):** the figures below come from `simulate_rolling_ic()`, which generates random data with a signal/return correlation built in. They show what the code reports when that assumption holds, nothing about this signal.
+
 - Rolling IC mean: ~-0.18 (negative: rising IV predicts downside)
 - Information Ratio: ~1.1
 - Win rate: ~57%
 - Half-life: ~12 days
-
-**Real IC pending historical data collection (need 10+ days).**
 
 ## Next Steps
 
