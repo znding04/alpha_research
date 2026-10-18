@@ -163,3 +163,47 @@ Signal: **SPX IV term ratio (VIX3M/VIX − 1)** (`historical.py`). Hypothesized 
 **Interpretation:** **Supported.** Backwardation (low VIX3M/VIX) predicts higher SPY returns: IC −0.12 at 5d (t −3.6), −0.19 at 21d (t −2.8), −0.26 post-2019. The same holds for QQQ/IWM/DIA (−0.15 to −0.18 at 21d). Contango strongly predicts VIX rising toward VIX3M (+0.43), which is the term structure's own forecast, so not an independent vol edge.
 
 ![cumulative IC](../figures/historical/alpha_03_iv_term_structure.png)
+
+## Delta-Hedged IC (vol P&L with price exposure removed)
+
+Script: `hedged_ic.py` (uses `common/hedged.py`). Output: `results/alpha_03_hedged_ic.csv`, `results/alpha_03_hedged_ic_quintiles.csv`.
+
+**Question:** does the term ratio predict option P&L once the underlying's price move is hedged out, not only the price return?
+
+**Targets** (same timing as the return IC: signal at close t, position opened at close t+1):
+- **Delta-hedged straddle**: buy a 30-calendar-day ATM straddle, delta-hedge daily at Black-Scholes delta, mark it each day at the IV for its remaining maturity (interpolated in total variance across VIX9D/VIX/VIX3M/VIX6M, so term-structure roll-down is included), exit after h days. Return = P&L / premium. QQQ/IWM/DIA use a flat IV from VXN/RVX/VXD (no published term structure).
+- **Variance swap to expiry**: RV²(next 21d)/VIX² − 1. Model-free; VIX² is the fair 30d SPX variance-swap rate.
+
+**Controls**: backwardation happens when VIX is high, so every SPY target is also scored against the VIX level and against the term ratio rank-residualized on VIX.
+
+### Results (time-series rank IC, t ≈ IC·√(N/h))
+
+| Target (SPY) | Term ratio IC (t) | post-2019 | VIX level IC (t) | Term ratio net of VIX IC (t) |
+|---|---|---|---|---|
+| Hedged straddle, 1d | **+0.131 (+8.2)** | +0.137 | −0.110 (−6.9) | **+0.084 (+5.3)** |
+| Hedged straddle, 5d | **+0.104 (+2.9)** | +0.117 | −0.104 (−2.9) | +0.050 (+1.4) |
+| Hedged straddle, 21d (≈ to expiry) | −0.137 (−1.9) | −0.149 | +0.011 (+0.2) | **−0.173 (−2.4)** |
+| Variance swap return, 21d | −0.065 (−0.9) | −0.032 | +0.013 (+0.2) | −0.106 (−1.5) |
+| *Unhedged return, 21d (for reference)* | *−0.195 (−2.8)* | *−0.255* | *+0.163 (+2.7)* | *−0.079 (−1.1)* |
+
+Same sign on the other index ETFs (term ratio IC): hedged straddle 1d +0.12 to +0.13 (t ≈ 8), 5d +0.09 to +0.13 (t 2.7–3.7), 21d −0.06 to −0.12 (t −0.9 to −1.8).
+
+SPY by term-ratio quintile (21d, 2009–2026, ~790 days each):
+
+| Quintile | VIX3M/VIX − 1 | Hedged straddle 21d | Straddle win rate | Var swap return | Unhedged return |
+|---|---|---|---|---|---|
+| Q1 backwardation | −0.002 | −16.2% | 17.6% | −11.9% | +2.31% |
+| Q2 | 0.083 | −18.2% | 15.4% | −6.7% | +1.09% |
+| Q3 | 0.132 | −19.7% | 16.2% | −24.8% | +0.81% |
+| Q4 | 0.177 | −20.0% | 17.3% | −26.6% | +0.56% |
+| Q5 steep contango | 0.243 | −25.1% | 9.8% | −34.1% | +0.73% |
+
+![hedged quintiles](../figures/historical/alpha_03_hedged_quintiles.png)
+
+### Interpretation
+
+1. **Short horizon (1–5d): contango predicts long-vol gains.** In contango, VIX tends to drift up toward VIX3M, and the vega gain outweighs the roll-down. This is the strongest result (t ≈ 8 at 1d on all four ETFs) and partly survives controlling for the VIX level (+0.084, t +5.3 at 1d). Caveat: 1-day straddle returns are small (mean −0.9%) compared with real bid-ask on straddles (roughly 1–2% of premium round trip), and marks use index-derived IVs rather than traded option prices.
+2. **To expiry (21d): steep contango predicts larger short-vol profits.** Long hedged straddles lose −25% in Q5 vs −16% in Q1 and win only 10% of the time. Net of the VIX level, IC is −0.17 (t −2.4). The variance-swap version points the same way but is not significant (t −1.5), because a few crash periods dominate its tails.
+3. **The unhedged return IC is mostly the VIX level.** VIX alone has IC +0.16 (t +2.7) for 21d SPY returns; the term ratio net of VIX drops to −0.08 (t −1.1), though −0.17 post-2019. So "backwardation → buy the index" is largely "high VIX → buy the index".
+
+**Bottom line:** alpha_03 is better described as a **volatility-timing signal** than an equity-return signal: steep contango favors selling 30d vol held to expiry, and is followed by short-term VIX upticks. Next steps: test with real SPX option prices (bid/ask) to see if the 1–5d edge survives costs, and test VIX futures (roll yield) as the cleaner tradable instrument.

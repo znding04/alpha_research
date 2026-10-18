@@ -1,0 +1,37 @@
+ticker,target,signal,ic,t,ic_post2019,n,target_mean
+SPY,varswap_21d,term_ratio,0.2933,4.1846,0.2586,4274,-0.0082
+SPY,varswap_21d,vix_level (control),-0.5298,-8.7376,-0.5022,5712,-0.0082
+SPY,varswap_21d,term_ratio | vix (residual),-0.0625,-0.8919,-0.0339,4274,-0.0082
+SPY,varswap_ret_21d,term_ratio,-0.0652,-0.9308,-0.0324,4274,-0.2183
+SPY,varswap_ret_21d,vix_level (control),0.0129,0.2122,-0.0509,5712,-0.2183
+SPY,varswap_ret_21d,term_ratio | vix (residual),-0.1057,-1.5079,-0.0892,4274,-0.2183
+SPY,straddle_1d,term_ratio,0.1308,8.2411,0.137,3969,-0.0086
+SPY,straddle_1d,vix_level (control),-0.1096,-6.9079,-0.117,3969,-0.0086
+SPY,straddle_1d,term_ratio | vix (residual),0.0839,5.2854,0.0864,3969,-0.0086
+SPY,straddle_5d,term_ratio,0.1038,2.9238,0.1168,3965,-0.0481
+SPY,straddle_5d,vix_level (control),-0.1044,-2.9407,-0.1254,3965,-0.0481
+SPY,straddle_5d,term_ratio | vix (residual),0.0504,1.4192,0.0538,3965,-0.0481
+SPY,straddle_21d,term_ratio,-0.137,-1.8783,-0.1492,3949,-0.1984
+SPY,straddle_21d,vix_level (control),0.0115,0.1576,-0.0691,3949,-0.1984
+SPY,straddle_21d,term_ratio | vix (residual),-0.1727,-2.3681,-0.2417,3949,-0.1984
+SPY,return_21d,term_ratio,-0.1946,-2.7766,-0.2554,4274,0.0086
+SPY,return_21d,vix_level (control),0.1628,2.6851,0.2076,5712,0.0086
+SPY,return_21d,term_ratio | vix (residual),-0.0788,-1.1248,-0.1681,4274,0.0086
+QQQ,varswap_21d,term_ratio,0.204,2.9097,0.1736,4274,-0.0084
+QQQ,varswap_ret_21d,term_ratio,-0.0468,-0.668,-0.0528,4274,-0.1568
+QQQ,straddle_1d,term_ratio,0.1239,8.1202,0.1258,4294,-0.006
+QQQ,straddle_5d,term_ratio,0.0928,2.7194,0.0966,4290,-0.0326
+QQQ,straddle_21d,term_ratio,-0.0613,-0.874,-0.0943,4274,-0.1342
+QQQ,return_21d,term_ratio,-0.1514,-2.16,-0.21,4274,0.0116
+IWM,varswap_21d,term_ratio,0.1981,2.8239,0.1591,4269,-0.0126
+IWM,varswap_ret_21d,term_ratio,-0.0315,-0.4487,-0.023,4269,-0.1765
+IWM,straddle_1d,term_ratio,0.1301,8.5177,0.1282,4284,-0.0067
+IWM,straddle_5d,term_ratio,0.1279,3.7335,0.1369,4260,-0.036
+IWM,straddle_21d,term_ratio,-0.0741,-1.0428,-0.0845,4164,-0.1544
+IWM,return_21d,term_ratio,-0.1696,-2.4201,-0.2136,4274,0.0069
+DIA,varswap_21d,term_ratio,0.2236,3.1881,0.1941,4270,-0.0068
+DIA,varswap_ret_21d,term_ratio,-0.097,-1.3829,-0.0203,4270,-0.2112
+DIA,straddle_1d,term_ratio,0.1218,7.975,0.1129,4286,-0.0063
+DIA,straddle_5d,term_ratio,0.0962,2.8104,0.1075,4266,-0.0425
+DIA,straddle_21d,term_ratio,-0.1245,-1.7572,-0.1395,4186,-0.1922
+DIA,return_21d,term_ratio,-0.1818,-2.5943,-0.2521,4274,0.0077
