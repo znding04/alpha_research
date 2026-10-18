@@ -57,7 +57,8 @@ alpha_research/
 | **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope | 🔄 Needs history |
 | **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Tail butterfly convexity (10Δ/5Δ wings) at ~30 DTE | ✅ Snapshot OK (fixed 10-18) |
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes; risk-neutral tail risk | ✅ Snapshot OK |
-| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²-RV² asymmetry) | ⚠️ IC uses synthetic back-filled history |
+|| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²-RV² asymmetry) | ⚠️ IC uses synthetic back-filled history |
+|| **IV Change** | `alpha_22_iv_change/` | 5-day ATM IV change (contrarian mean-reversion) across liquid expirations | ⚠️ Requires ≥2 snapshots for change |
 
 **Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (near−far VRP = VRP term slope, covered by alpha_06), `alpha_17_iv_calendar_spread` (short−long ATM IV = term slope, covered by alpha_03), `alpha_21_iv_percentile` (near-identical copy of alpha_05 writing the same history file), `alpha_18_vrp_momentum` (despite the name, its "momentum" is near VRP − mid VRP at one point in time, i.e. the VRP term slope covered by alpha_06). Numbers are not reused.
 
