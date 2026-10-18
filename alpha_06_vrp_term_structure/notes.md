@@ -131,8 +131,48 @@ This signal uniquely combines:
 4. **Intraday VRP** — Higher frequency using intraday options data
 5. **Machine learning** — Non-linear combination of term structure features
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | near_dte | near_vrp_variance | far_dte | far_vrp_variance | far−near |
+|---|---|---|---|---|---|
+| SPY | 7 | 0.0089 | 88 | 0.0132 | 0.0044 |
+| QQQ | 7 | 0.0244 | 88 | 0.0189 | -0.0055 |
+| IWM | 7 | 0.0155 | 88 | 0.0203 | 0.0049 |
+| DIA | 11 | 0.0138 | 88 | 0.0142 | 0.0004 |
+| GLD | 7 | -0.0050 | 88 | 0.0044 | 0.0094 |
+| SLV | 7 | -0.0405 | 88 | -0.0256 | 0.0149 |
+| TLT | 7 | 0.0111 | 88 | 0.0097 | -0.0013 |
+| EEM | 11 | 0.0363 | 88 | 0.0272 | -0.0091 |
+| EWZ | 11 | 0.5199 | 88 | 0.0515 | -0.4684 |
+| FXI | 11 | 0.6018 | 88 | 0.1099 | -0.4919 |
+| GDX | 11 | 0.0630 | 88 | 0.0446 | -0.0184 |
+| USO | 9 | 0.0879 | 88 | 0.0574 | -0.0305 |
+| AAPL | 7 | 0.0260 | 88 | 0.0332 | 0.0072 |
+| MSFT | 7 | 0.0263 | 88 | 0.0466 | 0.0203 |
+| GOOGL | 7 | 0.0429 | 88 | 0.0605 | 0.0176 |
+| AMZN | 7 | 0.0531 | 88 | 0.0720 | 0.0190 |
+
+**ETF vs single-name observations:**
+- Broad equity ETFs have upward-sloping VRP (SPY +0.004, IWM +0.005); QQQ is inverted (−0.006), consistent with its inverted IV term structure.
+- EWZ and FXI show extreme inversion (−0.47, −0.49 in variance units) driven by the front-expiry event premium. Single names slope upward (+0.007 to +0.020) because their far legs include earnings and RV is the same 30d for all legs.
+
 ## Files
 
 - `main.py` — Signal computation, daily snapshot generation
 - `ic_analysis.py` — IC testing framework (requires historical data)
 - `notes.md` — This file
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX VRP term slope (far − near)** (`historical.py`). Hypothesized IC sign vs forward returns: **−**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_06`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | -0.008 (-0.5) | -0.015 (-0.4) | -0.041 (-0.6) | -0.072 |
+| Fwd Δlog IV | ts | +0.007 (+0.4) | +0.005 (+0.1) | +0.018 (+0.3) | +0.017 |
+
+**Interpretation:** VRP term slope (far − near) has no return or vol predictability for SPY (|IC| < 0.05). Hypothesis not supported.
+
+![cumulative IC](../figures/historical/alpha_06_vrp_term_structure.png)

@@ -10,7 +10,8 @@ Cross-sectionally: High VRP tickers → higher expected returns.
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -20,7 +21,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def compute_atm_iv(ticker_str, target_dte_range=(14, 60)):

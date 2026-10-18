@@ -21,48 +21,80 @@ This repo is dedicated exclusively to **alpha signal discovery** — not strateg
 ## Folder Structure
 ```
 alpha_research/
-├── alpha_*/          # Individual alpha ideas (one folder per signal)
-│   ├── main.py       # Signal computation
-│   ├── ic_analysis.py  # Information coefficient tracking
-│   └── notes.md      # Hypothesis, rationale, results
-├── common/           # Shared utilities (factors, data loaders, IC calculators)
-│   └── utils.py
-├── data/             # Cached datasets (gitignored)
-├── notebooks/        # Exploratory research
-└── README.md         # This file
+├── alpha_*/              # One folder per signal
+│   ├── main.py           # Live signal from today's yfinance option chains
+│   ├── historical.py     # Historical version from CBOE vol indices (where possible)
+│   ├── ic_analysis.py    # Forward-return IC on accumulated live snapshots
+│   └── notes.md          # Hypothesis, rationale, results
+├── common/
+│   ├── universe.py       # Ticker universe (12 ETFs + 4 single names) & CBOE index map
+│   ├── history.py        # CBOE implied-vol index + price history loader (cached)
+│   ├── ic_engine.py      # Shared historical IC engine (cross-sectional & time-series)
+│   └── utils.py          # IC helpers, forward returns for live snapshots
+├── run_historical.py     # Runs every alpha_*/historical.py → results/ + figures/historical/
+├── collect_snapshots.py  # Runs every main.py, archives outputs to data/snapshots/<date>/
+├── results/              # historical_ic.csv, HISTORICAL.md
+├── figures/historical/   # Cumulative IC charts per alpha
+├── data/                 # Latest outputs (gitignored); data/snapshots/ IS versioned
+└── README.md
 ```
+
+## Universe
+
+**Live (option chains):** SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO + AAPL, MSFT, GOOGL, AMZN (`common/universe.py`).
+
+**Historical:** the 17 underlyings with a CBOE 30-day implied-vol index: SPY (VIX), QQQ (VXN), IWM (RVX), DIA (VXD), GLD (GVZ), SLV, TLT, EEM, EWZ, FXI, GDX, USO (OVX), AAPL, AMZN, GOOGL, GS, IBM. Most series start 2009–2011, VIX/TLT 2004. No CBOE index exists for MSFT. SPX-only signals use VIX9D/VIX/VIX3M/VIX6M, SKEW and COR3M.
 
 ## Implemented Signals
 
-**Status legend** (as of 2026-10-18):
-- ✅ **Snapshot OK**: signal computes correctly for all 6 tickers on a live chain. **No alpha has a real IC yet**; that needs ≥30–60 trading days of daily snapshots.
-- 🔄 **Needs history**: signal is a time-series change/rolling stat and cannot be computed until snapshot history accumulates.
-- ⚠️ **Data issue**: depends on synthetic or placeholder history; outputs are not meaningful yet.
+Status legend (2026-10-18). **Live status**: ✅ signal computes on today's chains · 🔄 needs accumulated snapshots · ⚠️ data issue. **Historical IC**: rank IC of the signal vs the next 21-day return (signal at close t, return from close t+1), Newey-West t-stat. ✅ = |t| ≥ 2, sign as hypothesized and stable post-2019 · ⚠️ = borderline or wrong sign · ❌ = not significant · n/a = smile/OI signals that need option-chain history (no free historical source). Full grid in [results/HISTORICAL.md](results/HISTORICAL.md).
 
-| Signal | Folder | Description | Status |
-|--------|--------|-------------|--------|
-| **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Snapshot OK |
-| **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew (Black-Scholes delta) at ~30d / ~75d & skew term slope | ✅ Snapshot OK (fixed 10-18) |
-| **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV term structure slope & far/near ratio (also covers calendar spread) | ✅ Snapshot OK (fixed 10-18) |
-| **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² - RV² variance risk premium, cross-sectional equity premium signal | ✅ Snapshot OK |
-| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range (mean-reversion) | ⚠️ 260/261 history days synthetic |
-| **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (also covers VRP carry) | ✅ Snapshot OK |
-| **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs weighted constituent IV spread (dispersion trading signal) | 🔄 Needs history |
-| **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip level | ✅ Snapshot OK (fixed 10-18) |
-| **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic OTM smile fit & 25Δ butterfly at ~30 DTE | ✅ Snapshot OK (fixed 10-18) |
-| **Vol-of-Vol** | `alpha_11_vol_of_vol/` | Realized vol of ATM IV (20d rolling); regime stability & transition risk signal | 🔄 Needs history (20d) |
-| **IV Momentum** | `alpha_12_iv_momentum/` | 5-day ATM IV trend (% change); fear spikes vs complacency signal | ⚠️ History is placeholder IVs, rebuild |
-| **IV Skew Momentum** | `alpha_13_iv_skew_momentum/` | 5-day rate of change of 25-delta put-call skew | 🔄 Needs history |
-| **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios | ✅ Snapshot OK |
-| **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope | 🔄 Needs history |
-| **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Tail butterfly convexity (10Δ/5Δ wings) at ~30 DTE | ✅ Snapshot OK (fixed 10-18) |
-| **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes; risk-neutral tail risk | ✅ Snapshot OK |
-|| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²-RV² asymmetry) | ⚠️ IC uses synthetic back-filled history |
-|| **IV Change** | `alpha_22_iv_change/` | 5-day ATM IV change (contrarian mean-reversion) across liquid expirations | ⚠️ Requires ≥2 snapshots for change |
+| Signal | Folder | Description | Live status | Historical IC (21d fwd return) |
+|---|---|---|---|---|
+| **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Snapshot OK | n/a — needs option-chain snapshots |
+| **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew (Black-Scholes delta) at ~30d / ~75d & skew term slope | ✅ Snapshot OK | ❌ **−0.020** (t −0.3), SPY time-series |
+| **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV term structure slope & far/near ratio (also covers calendar spread) | ✅ Snapshot OK | ✅ **−0.195** (t −2.8), SPY time-series |
+| **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² − RV² variance risk premium | ✅ Snapshot OK | ❌ **+0.007** (t +0.4), 17-name cross-section |
+| **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year range | ⚠️ Live history synthetic (historical version OK) | ❌ **−0.010** (t −0.6), 17-name cross-section |
+| **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (also covers VRP carry) | ✅ Snapshot OK | ❌ **−0.041** (t −0.6), SPY time-series |
+| **IV Dispersion** | `alpha_07_iv_dispersion/` | Index vs constituent IV spread (SPY/QQQ vs top holdings) | ✅ Snapshot OK (SPY, QQQ only) | ⚠️ **+0.119** (t +1.9), SPY time-series |
+| **Gamma Exposure (GEX)** | `alpha_08_gamma_exposure/` | Net dealer gamma exposure from OI; zero-gamma flip level | ✅ Snapshot OK | n/a — needs option-chain snapshots |
+| **IV Surface Curvature** | `alpha_09_iv_surface_curvature/` | Quadratic OTM smile fit & 25Δ butterfly at ~30 DTE | ✅ Snapshot OK | n/a — needs option-chain snapshots |
+| **Vol-of-Vol** | `alpha_11_vol_of_vol/` | Realized vol of ATM IV (20d rolling) | 🔄 Live needs 20d snapshots (historical version OK) | ❌ **+0.028** (t +1.7), 17-name cross-section |
+| **IV Momentum** | `alpha_12_iv_momentum/` | 5-day ATM IV change (also covers removed alpha_22) | ⚠️ Live history placeholder (historical version OK) | ❌ **−0.007** (t −0.9), 17-name cross-section |
+| **IV Skew Momentum** | `alpha_13_iv_skew_momentum/` | 5-day change of 25-delta put-call skew | 🔄 Live needs snapshots | ❌ **+0.008** (t +0.1), SPY time-series |
+| **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios | ✅ Snapshot OK | n/a — needs option-chain snapshots |
+| **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope | 🔄 Live needs snapshots | ❌ **−0.007** (t −0.1), SPY time-series |
+| **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Tail butterfly convexity (10Δ/5Δ wings) at ~30 DTE | ✅ Snapshot OK (no DIA) | n/a — needs option-chain snapshots |
+| **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes | ✅ Snapshot OK | n/a — needs option-chain snapshots |
+| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots |
 
-**Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (near−far VRP = VRP term slope, covered by alpha_06), `alpha_17_iv_calendar_spread` (short−long ATM IV = term slope, covered by alpha_03), `alpha_21_iv_percentile` (near-identical copy of alpha_05 writing the same history file), `alpha_18_vrp_momentum` (despite the name, its "momentum" is near VRP − mid VRP at one point in time, i.e. the VRP term slope covered by alpha_06). Numbers are not reused.
+**Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (= VRP term slope, alpha_06), `alpha_17_iv_calendar_spread` (= IV term slope, alpha_03), `alpha_18_vrp_momentum` (its "momentum" is near − mid VRP at one date, = VRP term slope, alpha_06), `alpha_21_iv_percentile` (copy of alpha_05), `alpha_22_iv_change` (5-day ATM IV change, = alpha_12). Numbers are not reused.
 
-**IC methodology:** `ic_analysis.py` scripts use `common.utils.forward_return()`, i.e. returns *after* the signal snapshot date. Before 2026-10-18 they used the past 5-day return. The simulated rolling-IC sections are synthetic demos with the IC built in and are **not evidence** of predictive power.
+## Historical Analysis
+
+Run `python3 run_historical.py` (add `--refresh` to re-download data). Each alpha with a `historical.py` is rebuilt daily from CBOE implied-vol indices, then scored against forward returns (does it predict price?) and forward changes in the underlying's 30d IV (does it predict vol?).
+
+| Alpha | Kind | Hyp. | IC (21d ret) | t | IC post-2019 | IC (21d ΔIV) | t | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| alpha_02_iv_skew_dynamics | ts | + | -0.020 | -0.3 | -0.121 | +0.124 | +2.0 | ❌ not significant |
+| alpha_03_iv_term_structure | ts | − | -0.195 | -2.8 | -0.255 | +0.431 | +6.1 | ✅ significant, as hypothesized |
+| alpha_04_vrp | cs | + | +0.007 | +0.4 | +0.035 | -0.144 | -9.5 | ❌ not significant |
+| alpha_05_iv_rank_percentile | cs | + | -0.010 | -0.6 | -0.002 | -0.353 | -24.8 | ❌ not significant |
+| alpha_06_vrp_term_structure | ts | − | -0.041 | -0.6 | -0.072 | +0.018 | +0.3 | ❌ not significant |
+| alpha_07_iv_dispersion | ts | + | +0.120 | +1.9 | +0.213 | -0.252 | -4.0 | ❌ not significant |
+| alpha_11_vol_of_vol | cs | − | +0.028 | +1.7 | -0.005 | +0.003 | +0.2 | ❌ not significant |
+| alpha_12_iv_momentum | cs | − | -0.007 | -0.9 | -0.008 | -0.142 | -16.3 | ❌ not significant |
+| alpha_13_iv_skew_momentum | ts | − | +0.008 | +0.1 | +0.015 | +0.018 | +0.3 | ❌ not significant |
+| alpha_15_iv_term_momentum | ts | + | -0.007 | -0.1 | +0.002 | +0.132 | +1.9 | ❌ not significant |
+
+**Key findings**
+- **Only one signal predicts returns robustly: the IV term structure (alpha_03).** When SPX vol is in backwardation (VIX3M/VIX low), index ETFs outperform over the next 5–21 days. IC −0.12 at 5d (t −3.6) and −0.19 at 21d (t −2.8) for SPY; the same sign and size hold for QQQ, IWM and DIA (one market signal, not four independent confirmations), and post-2010 and post-2019.
+- **Implied correlation (alpha_07, COR3M)** is borderline: +0.12 at 21d (t +1.9), +0.07 at 5d with t ≈ 2 across all four index ETFs.
+- **VRP, IV percentile, IV momentum, vol-of-vol show no return predictability**, cross-sectionally or per ticker. VRP's cross-sectional IC was negative 2011–2017 and positive since 2021, so it is regime-dependent, not a stable premium.
+- **Many signals strongly predict the *change in IV*** (IV percentile −0.35, t −25; IV momentum −0.14; VRP −0.14): high or rising IV falls back. That is ordinary vol mean reversion. It is **not directly tradable**: VIX futures and variance swaps already price the expected reversion (the futures curve slopes toward the mean), so a spot-IV forecast is not a P&L forecast. Testing against VIX-futures or straddle returns is the next step before treating these as vol alphas.
+
+**Caveats:** SPX-only signals are a single time series (~15 years, few independent 21-day periods); persistent signals make their t-stats optimistic. CBOE index IVs are 30-day constant-maturity proxies, not the exact ATM IV the live `main.py` scripts compute. Smile-shape and OI-based alphas (01, 08, 09, 14, 16, 19, 20) have no free historical source; they are scored only as live snapshots accumulate (`collect_snapshots.py`).
 
 ## Alpha Development Workflow
 
@@ -73,7 +105,9 @@ alpha_research/
 5. **Document**: Record pass/fail, edge cases, look-ahead risks
 
 ## Key Files
-- `common/utils.py` — shared helpers for IC calculation, rolling statistics, factor cleaning
+- `common/ic_engine.py` — the single IC methodology used for all historical results
+- `common/history.py` — historical data (CBOE + yfinance), cached in `data/history/`
+- `common/utils.py` — IC helpers and forward returns for live snapshots
 
 ## Notes
 - All alphas must be tested against look-ahead bias

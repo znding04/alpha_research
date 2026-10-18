@@ -23,3 +23,6 @@ test_*.py
 # OS
 .DS_Store
 Thumbs.db
+# Historical data cache (rebuilt by common/history.py)
+data/history/
+results/cache/

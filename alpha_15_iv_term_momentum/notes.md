@@ -76,6 +76,33 @@
 | Half-life | 5-15 days | Fast signal decay — high turnover |
 | Optimal Horizon | 1-5 days | Short-term regime transition |
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | near_atm_iv | far_atm_iv | near_dte | far_dte | term_slope | history_len |
+|---|---|---|---|---|---|---|
+| SPY | 0.1390 | 0.1616 | 0 | 163 | 0.0001 | 2 |
+| QQQ | 0.2366 | 0.2275 | 0 | 163 | -0.0001 | 2 |
+| IWM | 0.1835 | 0.2271 | 0 | 179 | 0.0002 | 1 |
+| DIA | 0.1573 | 0.1618 | 4 | 163 | 0.0000 | 1 |
+| GLD | 0.1693 | 0.2188 | 0 | 163 | 0.0003 | 1 |
+| SLV | 0.3120 | 0.3671 | 0 | 179 | 0.0003 | 1 |
+| TLT | 0.1372 | 0.1424 | 0 | 179 | 0.0000 | 1 |
+| EEM | 0.2891 | 0.3414 | 4 | 163 | 0.0003 | 1 |
+| EWZ | 0.5054 | 0.6041 | 4 | 151 | 0.0007 | 1 |
+| FXI | 0.2915 | 0.5037 | 4 | 179 | 0.0012 | 1 |
+| GDX | 0.3887 | 0.4399 | 0 | 151 | 0.0003 | 1 |
+| USO | 0.4916 | 0.4396 | 2 | 179 | -0.0003 | 1 |
+| AAPL | 0.2514 | 0.2767 | 0 | 179 | 0.0001 | 2 |
+| MSFT | 0.2434 | 0.3098 | 0 | 179 | 0.0004 | 2 |
+| GOOGL | 0.3185 | 0.3621 | 0 | 179 | 0.0002 | 2 |
+| AMZN | 0.2871 | 0.3724 | 0 | 179 | 0.0005 | 2 |
+
+**ETF vs single-name observations:**
+- Momentum needs history (1–2 entries per ticker). Term slopes are positive for most names; QQQ and USO are the only negative slopes.
+- ⚠️ The near leg is still 0–4 DTE for most tickers (no minimum-DTE filter, unlike alpha_03), which makes the slope noisy; should adopt alpha_03's MIN_DTE = 7.
+
 ## Results (2026-10-10)
 
 | Ticker | Price | Near IV | Far IV | Slope | Mom_5d | Z-Score | Regime |
@@ -115,3 +142,16 @@
 - "VIX Term Structure and S&P 500 Returns" — Simon (2018)
 - "Fear and Greed in the Options Market" — Bekaert & Hoerova (2014)
 - CBOE VIX Term Structure methodology (VXST, VIX, VXV, VXMT)
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX term momentum (Δ VIX3M/VIX 5d)** (`historical.py`). Hypothesized IC sign vs forward returns: **+**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_15`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | -0.030 (-1.9) | -0.044 (-1.3) | -0.007 (-0.1) | +0.002 |
+| Fwd Δlog IV | ts | +0.102 (+6.7) | +0.164 (+4.8) | +0.132 (+1.9) | +0.136 |
+
+**Interpretation:** No return predictability. Weak vol predictability (+0.13 at 21d, t +1.9), mostly the term-structure level effect of alpha_03. Hypothesis not supported.
+
+![cumulative IC](../figures/historical/alpha_15_iv_term_momentum.png)

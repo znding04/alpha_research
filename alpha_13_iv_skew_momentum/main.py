@@ -8,7 +8,8 @@ mean-reversion or directional move. Rapid skew flattening signals complacency.
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +20,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import json
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 HISTORY_FILE = "data/iv_skew_momentum_history.json"
 LOOKBACK_DAYS = 20  # Days of history to compute momentum
 
@@ -72,29 +73,32 @@ def compute_current_skew(ticker_str):
         if not valid_exps:
             return None
         
-        # Use the nearest valid expiration
-        exp_date, dte = valid_exps[0]
-        exp_str = exp_date.strftime("%Y-%m-%d")
+        # Nearest valid expiration with enough liquid strikes (thin ETF weeklies
+        # such as GDX can fail the filter, so fall through to the next expiry)
+        for exp_date, dte in valid_exps:
+            exp_str = exp_date.strftime("%Y-%m-%d")
         
-        chain = tq.option_chain(exp_str)
-        calls = chain.calls
-        puts = chain.puts
+            chain = tq.option_chain(exp_str)
+            calls = chain.calls
+            puts = chain.puts
         
-        # Filter liquid options
-        calls = calls[
-            (calls['volume'].fillna(0) > 10) | (calls['openInterest'].fillna(0) > 100)
-        ].copy()
-        puts = puts[
-            (puts['volume'].fillna(0) > 10) | (puts['openInterest'].fillna(0) > 100)
-        ].copy()
+            # Filter liquid options
+            calls = calls[
+                (calls['volume'].fillna(0) > 10) | (calls['openInterest'].fillna(0) > 100)
+            ].copy()
+            puts = puts[
+                (puts['volume'].fillna(0) > 10) | (puts['openInterest'].fillna(0) > 100)
+            ].copy()
         
-        if len(calls) < 5 or len(puts) < 5:
-            return None
+            if len(calls) < 5 or len(puts) < 5:
+                continue
         
-        put_25d = get_25d_iv(puts, current_price, 'put')
-        call_25d = get_25d_iv(calls, current_price, 'call')
+            put_25d = get_25d_iv(puts, current_price, 'put')
+            call_25d = get_25d_iv(calls, current_price, 'call')
         
-        if pd.isna(put_25d) or pd.isna(call_25d):
+            if pd.notna(put_25d) and pd.notna(call_25d):
+                break
+        else:
             return None
         
         skew = put_25d - call_25d  # Positive = put premium (fear)

@@ -6,9 +6,8 @@ and forward equity returns across the ticker universe.
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -20,7 +19,7 @@ from datetime import datetime, timedelta
 
 from common.utils import compute_ic, rolling_ic, compute_signal_metrics, forward_return, forward_returns_available
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 # Signal fields to test
 SIGNAL_FIELDS = [

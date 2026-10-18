@@ -68,6 +68,33 @@ Expirations below `MIN_DTE = 7` are skipped; 0-DTE/expiry-day IVs are unreliable
 4. **Single snapshot** — Cannot compute slope change without history
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | near_dte | near_atm_iv | far_dte | far_atm_iv | far/near |
+|---|---|---|---|---|---|
+| SPY | 8 | 0.1372 | 89 | 0.1518 | 1.1068 |
+| QQQ | 8 | 0.2297 | 89 | 0.2196 | 0.9561 |
+| IWM | 8 | 0.1867 | 89 | 0.1987 | 1.0644 |
+| DIA | 12 | 0.1535 | 89 | 0.1503 | 0.9792 |
+| GLD | 8 | 0.1855 | 89 | 0.2128 | 1.1472 |
+| SLV | 8 | 0.3281 | 89 | 0.3632 | 1.1068 |
+| TLT | 8 | 0.1337 | 89 | 0.1430 | 1.0694 |
+| EEM | 12 | 0.2747 | 89 | 0.2730 | 0.9938 |
+| EWZ | 12 | 0.8372 | 89 | 0.4767 | 0.5694 |
+| FXI | 12 | 0.6523 | 89 | 0.5095 | 0.7811 |
+| GDX | 12 | 0.4609 | 89 | 0.4520 | 0.9805 |
+| USO | 10 | 0.4901 | 89 | 0.4641 | 0.9471 |
+| AAPL | 8 | 0.2635 | 89 | 0.2552 | 0.9683 |
+| MSFT | 8 | 0.2847 | 89 | 0.2960 | 1.0399 |
+| GOOGL | 8 | 0.3341 | 89 | 0.3386 | 1.0136 |
+| AMZN | 8 | 0.3464 | 89 | 0.3493 | 1.0081 |
+
+**ETF vs single-name observations:**
+- Most equity/commodity ETFs are in contango (SPY 1.11, GLD 1.15, SLV 1.11); QQQ (0.96) and USO (0.95) are mildly inverted.
+- EWZ (0.57) and FXI (0.78) are in steep backwardation — event premium in the front expiry (Brazil election; FXI front IV may also be thin-quote noise). Single-name term structures are flat-to-inverted because the near legs straddle earnings; ETF readings are uncontaminated.
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | Near IV (DTE) | Far IV (DTE) | Term Slope (/day) | Term Ratio | Regime | N Exp |
@@ -123,3 +150,16 @@ With synthetic data (60 days, negative correlation between slope and returns):
 - "Volatility Term Structure and Risk Premia" — Mixon (2007)
 - CBOE VIX Term Structure (VIX9D, VIX, VIX3M, VIX6M)
 - "Term Structure of Volatility Risk Premia" — Dew-Becker et al. (2017)
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX IV term ratio (VIX3M/VIX − 1)** (`historical.py`). Hypothesized IC sign vs forward returns: **−**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_03`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | -0.068 (-4.4) | -0.124 (-3.6) | -0.195 (-2.8) | -0.255 |
+| Fwd Δlog IV | ts | +0.174 (+11.4) | +0.294 (+8.6) | +0.431 (+6.1) | +0.465 |
+
+**Interpretation:** **Supported.** Backwardation (low VIX3M/VIX) predicts higher SPY returns: IC −0.12 at 5d (t −3.6), −0.19 at 21d (t −2.8), −0.26 post-2019. The same holds for QQQ/IWM/DIA (−0.15 to −0.18 at 21d). Contango strongly predicts VIX rising toward VIX3M (+0.43), which is the term structure's own forecast, so not an independent vol edge.
+
+![cumulative IC](../figures/historical/alpha_03_iv_term_structure.png)

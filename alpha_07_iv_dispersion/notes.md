@@ -70,6 +70,19 @@ else:
     → Neutral
 ```
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| index | index_atm_iv | weighted_const_iv | dispersion | dispersion_ratio | n_constituents |
+|---|---|---|---|---|---|
+| SPY | 0.1547 | 0.3823 | -0.2277 | 0.4046 | 4 |
+| QQQ | 0.2411 | 0.3796 | -0.1386 | 0.6350 | 4 |
+
+**ETF vs single-name observations:**
+- Dispersion is only defined for SPY and QQQ (top-4 holdings: AAPL, MSFT, GOOGL, AMZN). Other ETFs have no small liquid constituent set, so the universe expansion does not apply here.
+- Constituent IV (0.38) is far above index IV (SPY 0.15, QQQ 0.24): implied correlation is low, but the constituent IVs are inflated by late-Oct earnings, so the ratio overstates dispersion today.
+
 ## IC Analysis
 
 Run `ic_analysis.py` after building 20+ days of history:
@@ -84,3 +97,16 @@ Run `ic_analysis.py` after building 20+ days of history:
 3. [ ] Add rolling weights from actual SPY/QQQ holdings (via ETF fact sheets)
 4. [ ] Test dispersion + VRP combo signal
 5. [ ] Add constituent correlation regime detection
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX implied correlation (COR3M)** (`historical.py`). Hypothesized IC sign vs forward returns: **+**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_07`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | +0.026 (+1.9) | +0.066 (+2.1) | +0.119 (+1.9) | +0.213 |
+| Fwd Δlog IV | ts | -0.069 (-5.0) | -0.133 (-4.3) | -0.252 (-4.0) | -0.295 |
+
+**Interpretation:** Borderline. High implied correlation (COR3M) precedes higher index returns: +0.07 at 5d (t ≈ 2 for SPY/QQQ/IWM/DIA), +0.12 at 21d (t +1.9), +0.21 post-2019. Also predicts VIX falling (−0.25, t −4.0). Worth keeping; needs out-of-sample confirmation.
+
+![cumulative IC](../figures/historical/alpha_07_iv_dispersion.png)

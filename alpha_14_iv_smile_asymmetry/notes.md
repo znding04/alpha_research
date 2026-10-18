@@ -63,6 +63,33 @@
 - Weight by volume/OI within each expiration, then aggregate
 - Normalize spreads by ATM IV to make cross-sectional comparable
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | atm_iv | oi_ratio | vol_ratio | oi_iv_spread | vol_iv_spread_norm |
+|---|---|---|---|---|---|
+| SPY | 0.1346 | 1.2239 | 1.0605 | 0.0783 | 0.5654 |
+| QQQ | 0.2298 | 1.8279 | 1.7739 | 0.1704 | 0.5340 |
+| IWM | 0.1910 | 0.7344 | 0.9200 | 0.0304 | 0.2818 |
+| DIA | 0.1530 | 0.9854 | 0.9763 | 0.1137 | 0.2615 |
+| GLD | 0.1931 | 0.5253 | 0.4163 | 0.0053 | -0.0710 |
+| SLV | 0.3574 | 0.4114 | 0.7751 | -0.0735 | -0.0030 |
+| TLT | 0.1436 | 0.4711 | 0.2039 | -0.0239 | -0.1949 |
+| EEM | 0.2720 | 8.4787 | 4.1178 | 0.0628 | 0.0542 |
+| EWZ | 0.7192 | 2.2403 | 1.5688 | 0.3285 | 0.4564 |
+| FXI | 0.2876 | 1.6561 | 1.7790 | 0.4637 | 1.1660 |
+| GDX | 0.4684 | 0.4053 | 0.8182 | 0.0037 | 0.0588 |
+| USO | 0.4888 | 1.1083 | 1.5686 | 0.0019 | -0.0232 |
+| AAPL | 0.2714 | 0.8109 | 1.3713 | 0.1430 | 0.0433 |
+| MSFT | 0.3804 | 0.4171 | 0.6272 | 0.0576 | 0.1073 |
+| GOOGL | 0.4389 | 1.1319 | 0.5092 | 0.0083 | 0.0781 |
+| AMZN | 0.3927 | 0.3398 | 0.9464 | 0.0585 | 0.0380 |
+
+**ETF vs single-name observations:**
+- QQQ (put/call OI 1.83) and EEM (8.5) are the most put-heavy; GLD, SLV, TLT, GDX are call-heavy (OI ratio 0.41–0.53) — positioning for upside in metals and duration.
+- FXI's normalized volume spread (1.17) is an outlier on a thin chain. Single names are call-heavy by OI (AMZN 0.34, MSFT 0.42) going into earnings.
+
 ## Results (2026-10-16 close)
 
 *Run 2026-10-18 on Friday's closing chains, nearest 3 expirations. Spreads are put IV minus call IV. Norm = spread / ATM IV.*

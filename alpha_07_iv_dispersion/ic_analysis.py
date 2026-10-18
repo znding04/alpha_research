@@ -8,7 +8,6 @@ Requires historical dispersion data (run main.py daily to build history).
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -23,7 +22,7 @@ from common.utils import compute_ic, compute_signal_metrics, forward_return
 
 
 HISTORY_PATH = "data/iv_dispersion_history.json"
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def load_dispersion_history():

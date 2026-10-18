@@ -8,7 +8,8 @@ Rationale: Rising IV often precedes downside (fear buying); falling IV often pre
 But extreme IV momentum can also signal mean reversion in IV itself.
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +20,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import json
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 HISTORY_FILE = "data/iv_momentum_history.json"
 LOOKBACK_DAYS = 5  # Days for momentum calculation
@@ -35,7 +36,7 @@ def get_robust_atm_iv(tq, current_price, target_date_str):
         df['openInterest'] = df['openInterest'].fillna(0)
         
         df = df[
-            ((df['volume'] > 50) | (df['openInterest'] > 500)) &
+            ((df['volume'] > 10) | (df['openInterest'] > 100)) &  # repo-standard liquidity; >50/>500 dropped thin ETF chains (FXI, GDX)
             (df['impliedVolatility'].notna()) &
             (df['impliedVolatility'] > 0.05) &  # Filter out near-zero IV
             (df['impliedVolatility'] < 3.0) &

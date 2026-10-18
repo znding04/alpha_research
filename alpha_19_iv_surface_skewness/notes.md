@@ -78,6 +78,33 @@ This is a more direct proxy for risk-neutral skewness than the moment-based appr
 4. **Moneyness filter (0.80-1.20)** — excludes deep OTM wings where tail risk is most extreme
 5. **OI may be stale** — previous day's OI, not intraday
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | dte | atm_iv | iv_skewness | iv_kurtosis | wing_skew |
+|---|---|---|---|---|---|
+| SPY | 7 | 0.1328 | 2.3403 | 8.7567 | 0.2140 |
+| QQQ | 7 | 0.2235 | 2.6083 | 6.1912 | 0.2454 |
+| IWM | 7 | 0.1806 | 1.6257 | 2.5230 | 0.1319 |
+| DIA | 11 | 0.1520 | 2.0121 | 3.4789 | 0.1689 |
+| GLD | 7 | 0.1878 | 1.2903 | 1.9886 | 0.0171 |
+| SLV | 7 | 0.3291 | 2.3966 | 8.4543 | 0.0861 |
+| TLT | 7 | 0.1377 | 0.9803 | -0.2064 | -0.0296 |
+| EEM | 11 | 0.2935 | 0.3126 | -1.7445 | 0.0377 |
+| EWZ | 11 | 0.8386 | -1.6575 | 2.8114 | 0.3950 |
+| FXI | 11 | 0.3164 | -0.3277 | -0.9747 | -0.5908 |
+| GDX | 11 | 0.4663 | 2.3793 | 8.0915 | -0.0231 |
+| USO | 9 | 0.4962 | 1.5690 | 13.6 | 0.0257 |
+| AAPL | 7 | 0.2650 | 5.0522 | 36.5 | 0.2290 |
+| MSFT | 7 | 0.2746 | 1.5172 | 0.7566 | 0.1048 |
+| GOOGL | 7 | 0.3340 | 3.2159 | 15.0 | 0.1534 |
+| AMZN | 7 | 0.3508 | 1.3352 | 0.8408 | 0.1556 |
+
+**ETF vs single-name observations:**
+- Equity ETFs and SLV/GDX have strongly positive IV skewness (put wing rich); EWZ, FXI and EEM are negative/near zero — their smiles are call-wing heavy or flat.
+- AAPL (kurtosis 36.5) and GOOGL (15.0) are still outliers at 7 DTE, driven by a few far-wing strikes; expiry selection now skips expiries with <5 liquid puts/calls (fixes GDX).
+
 ## Results (2026-10-16 close)
 
 *Run 2026-10-18 on Friday's closing chains, nearest liquid expiry 2026-10-26 (7 DTE). The 2026-10-14 table was removed because its ATM IVs (0.0156-0.0234) were yfinance placeholders, which invalidated those moments and wing IVs.*

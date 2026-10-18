@@ -11,7 +11,8 @@ IV curve steepening/flattening as a regime change indicator.
   → Stress building, fear accelerating
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -22,7 +23,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import json
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 HISTORY_FILE = "data/iv_term_momentum_history.json"
 LOOKBACK_DAYS = 60  # Keep 60 days of history for momentum calc
 

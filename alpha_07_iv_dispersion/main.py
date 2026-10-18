@@ -13,7 +13,8 @@ Pairs well with: VRP (alpha_04), IV Skew (alpha_02), IV Term Structure (alpha_03
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -24,7 +25,7 @@ import yfinance as yf
 from datetime import datetime
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS  # not used for dispersion: SPY/QQQ vs their top holdings (below); other ETFs lack a small liquid constituent set
 
 # SPY weights (approximate top 4 holdings as of 2024)
 SPY_WEIGHTS = {

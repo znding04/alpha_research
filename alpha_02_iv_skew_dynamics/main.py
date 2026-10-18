@@ -5,7 +5,8 @@ Tracks put-call IV skew (25-delta put IV - 25-delta call IV) across expirations.
 Signal = change in skew vs. forward returns.
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -16,7 +17,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 from math import erf
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 RISK_FREE = 0.04          # flat annual rate for delta calc

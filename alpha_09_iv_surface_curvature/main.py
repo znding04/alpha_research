@@ -11,7 +11,8 @@ mean-reversion bounce or volatility expansion.
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -21,7 +22,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 TARGET_DTE = 30
 Z_25D = 0.6745  # N^-1(0.75): 25-delta strike sits ~0.674·σ√T from ATM in log-moneyness
 # Regime thresholds on butterfly_25d / ATM IV (relative wing premium)

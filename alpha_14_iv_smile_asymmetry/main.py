@@ -12,7 +12,8 @@ Signal = Σ(OI_put × IV_put) / Σ(OI_put) - Σ(OI_call × IV_call) / Σ(OI_call
 Also computes: Put/Call OI Ratio, Put/Call Volume Ratio as flow signals.
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -23,7 +24,7 @@ import yfinance as yf
 from datetime import datetime
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def compute_positioning_metrics(ticker_str):

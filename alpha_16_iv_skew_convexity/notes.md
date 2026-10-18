@@ -91,6 +91,32 @@ This isolates the *non-linear* component of tail pricing:
 - < 1: Call wing richer (upside speculation / call overwriting)
 - ~1: Symmetric smile (rare for equities)
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | dte | atm_iv | skew_25d | skew_convexity_10d | tail_convexity_premium |
+|---|---|---|---|---|---|
+| SPY | 32 | 0.1508 | 0.0797 | 0.6211 | -0.1957 |
+| QQQ | 32 | 0.2287 | 0.0712 | 0.2093 | -0.0160 |
+| IWM | 32 | 0.2031 | 0.0487 | 0.2613 | 0.0662 |
+| GLD | 32 | 0.2144 | -0.0105 | 0.2132 | 0.0969 |
+| SLV | 32 | 0.3647 | -0.0103 | 0.0881 | 0.0765 |
+| TLT | 32 | 0.1463 | 0.0066 | 0.5760 | 0.0127 |
+| EEM | 32 | 0.2705 | 0.0349 | 0.1884 | -0.0727 |
+| EWZ | 32 | 0.5767 | 0.0754 | 0.1101 | -0.0354 |
+| FXI | 32 | 0.2438 | 0.0009 | 0.3071 | 0.0962 |
+| GDX | 32 | 0.4354 | -0.0116 | -0.0060 | 0.0571 |
+| USO | 32 | 0.4806 | -0.0372 | 0.0363 | 0.0696 |
+| AAPL | 32 | 0.2675 | 0.0218 | 0.1768 | 0.0902 |
+| MSFT | 32 | 0.3255 | 0.0135 | 0.0358 | 0.0587 |
+| GOOGL | 32 | 0.3951 | -0.0001 | -0.0585 | 0.0782 |
+| AMZN | 32 | 0.4068 | 0.0027 | 0.0348 | 0.0500 |
+
+**ETF vs single-name observations:**
+- SPY has by far the largest 10Δ convexity (0.62) and TLT is second (0.58); both have a negative/low tail premium, i.e. the wings curve up symmetrically rather than beyond linear skew.
+- DIA fails: at 32 DTE its liquid strikes don't reach ±10% moneyness (DIA vol ~15%, so ±10% is ~2.3σ). Commodity ETFs and single names show positive tail premium (0.05–0.10).
+
 ## Results (2026-10-16 close)
 
 *Run 2026-10-18 on Friday's closing chains, expiry 2026-11-20 (32 DTE). Replaces an earlier 7-DTE table from the same day that had the strike-mapping bug (see Fix below).*

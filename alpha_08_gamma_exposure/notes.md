@@ -85,6 +85,33 @@ Recompute every contract's gamma at hypothetical spots on a ±20% grid around sp
 5. **Excludes non-listed / OTC / index options** — SPY/SPX gamma differs; QQQ/NDX similar
 6. **Market hours bias** — After-hours OI/gamma may be stale
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | current_price | flip_strike | distance_to_flip_pct | total_gex_$bn |
+|---|---|---|---|---|
+| SPY | 763.2 | 777.1 | 1.8100 | -10.2 |
+| QQQ | 709.8 | 740.6 | 4.3400 | -6.9146 |
+| IWM | 270.4 | 284.3 | 5.1200 | -2.3172 |
+| DIA | 519.1 | 516.3 | -0.5500 | 0.0587 |
+| GLD | 382.0 | 382.6 | 0.1700 | -0.0279 |
+| SLV | 51.5 | 50.5 | -1.9100 | 0.0101 |
+| TLT | 80.0 | 77.9 | -2.6900 | 0.4435 |
+| EEM | 62.9 | 68.9 | 9.6500 | -0.0544 |
+| EWZ | 41.8 | 34.4 | -17.8 | 0.1858 |
+| FXI | 33.8 | 34.5 | 2.0700 | -0.0059 |
+| GDX | 87.7 | 87.0 | -0.7700 | 0.0032 |
+| USO | 161.8 | 151.9 | -6.1100 | 0.0371 |
+| AAPL | 343.5 | 334.3 | -2.6600 | 0.2677 |
+| MSFT | 529.0 | 479.2 | -9.4100 | 0.4120 |
+| GOOGL | 340.6 | 332.8 | -2.2800 | 0.0842 |
+| AMZN | 250.0 | 241.4 | -3.4300 | 0.1592 |
+
+**ETF vs single-name observations:**
+- SPY, QQQ, IWM are all short gamma with the flip above spot (+1.8%, +4.3%, +5.1%) — dealer hedging amplifies moves until those levels are reclaimed. DIA, GLD, GDX sit within ±1% of the flip.
+- Single names are long gamma (flip 2–9% below spot), i.e. dealer hedging dampens moves. Notional GEX is ~20–100× larger for SPY/QQQ than any other ticker, so cross-sectional comparisons should use GEX normalized by market cap/ADV.
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | Total Dealer GEX ($/1%) | Regime | ATM Strike GEX | Zero-Gamma Flip | Distance | Expirations |

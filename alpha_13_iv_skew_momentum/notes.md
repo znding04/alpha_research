@@ -76,6 +76,33 @@ Alternative: Sort by skew z-score for mean-reversion (long extreme negative z, s
 - Filters: volume > 10 or OI > 100 per leg, min 5 contracts each side
 - Cron-friendly: single run fetches all tickers, updates history, outputs signals
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | dte | put_25d_iv | call_25d_iv | skew_25d |
+|---|---|---|---|---|
+| SPY | 7 | 0.2394 | 0.1201 | 0.1193 |
+| QQQ | 7 | 0.3102 | 0.1868 | 0.1234 |
+| IWM | 7 | 0.2583 | 0.1680 | 0.0903 |
+| DIA | 11 | 0.2085 | 0.1414 | 0.0671 |
+| GLD | 7 | 0.2044 | 0.1939 | 0.0105 |
+| SLV | 7 | 0.3672 | 0.3164 | 0.0508 |
+| TLT | 7 | 0.1816 | 0.1777 | 0.0039 |
+| EEM | 11 | 0.3140 | 0.2813 | 0.0327 |
+| EWZ | 11 | 0.8857 | 0.7617 | 0.1240 |
+| FXI | 11 | 0.2578 | 0.3281 | -0.0703 |
+| GDX | 11 | 0.4761 | 0.4556 | 0.0205 |
+| USO | 9 | 0.4829 | 0.5217 | -0.0388 |
+| AAPL | 7 | 0.3023 | 0.2327 | 0.0696 |
+| MSFT | 7 | 0.3145 | 0.2651 | 0.0493 |
+| GOOGL | 7 | 0.3308 | 0.3042 | 0.0266 |
+| AMZN | 7 | 0.3485 | 0.2859 | 0.0626 |
+
+**ETF vs single-name observations:**
+- Skew level only (momentum needs ≥5 days of history). Index ETFs have the steepest 25Δ skew at 7–11 DTE (QQQ 12.3, SPY 11.9, EWZ 12.4 vol pts); FXI (−7.0) and USO (−3.9) show call skew.
+- Expiry selection now falls through to the next 7–45 DTE expiry when the nearest one has <5 liquid puts/calls (fixes GDX).
+
 ## Next Steps
 
 1. ✅ Create main.py, ic_analysis.py, notes.md
@@ -83,3 +110,16 @@ Alternative: Sort by skew z-score for mean-reversion (long extreme negative z, s
 3. ⏳ After 30 days: run IC analysis, document results
 4. ⏳ Test regime conditioning (VIX > 20 vs < 20)
 5. ⏳ Compare with alpha_02 (skew level) — does momentum add orthogonal info?
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX skew momentum (ΔSKEW 5d)** (`historical.py`). Hypothesized IC sign vs forward returns: **−**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_13`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | -0.004 (-0.3) | +0.017 (+0.6) | +0.008 (+0.1) | +0.015 |
+| Fwd Δlog IV | ts | +0.010 (+0.8) | -0.002 (-0.0) | +0.018 (+0.3) | +0.011 |
+
+**Interpretation:** No predictability for SPY returns or VIX changes at any horizon. Hypothesis not supported.
+
+![cumulative IC](../figures/historical/alpha_13_iv_skew_momentum.png)

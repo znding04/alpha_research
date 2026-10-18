@@ -59,6 +59,33 @@ Near leg = expiry closest to 30 DTE, far leg = closest to 75 DTE (both ≥ 7 DTE
 3. **Liquidity filter** may exclude informative illiquid strikes
 4. **Single snapshot** — cannot compute `skew_change_1d` without history
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | near_dte | near_skew_25d | far_dte | far_skew_25d |
+|---|---|---|---|---|
+| SPY | 33 | 0.0460 | 74 | 0.0416 |
+| QQQ | 33 | 0.0650 | 74 | 0.0451 |
+| IWM | 33 | 0.0345 | 74 | 0.0314 |
+| DIA | 33 | 0.0268 | 74 | 0.0197 |
+| GLD | 33 | -0.0200 | 74 | -0.0370 |
+| SLV | 33 | -0.0102 | 74 | -0.0365 |
+| TLT | 33 | 0.0032 | 74 | 0.0087 |
+| EEM | 33 | 0.0331 | 74 | 0.0921 |
+| EWZ | 33 | 0.1543 | 74 | 0.0344 |
+| FXI | 33 | 0.0115 | 33 | 0.0115 |
+| GDX | 33 | -0.0125 | 61 | -0.0158 |
+| USO | 33 | -0.0609 | 61 | -0.0225 |
+| AAPL | 33 | 0.0294 | 61 | 0.0290 |
+| MSFT | 33 | 0.0200 | 61 | 0.0090 |
+| GOOGL | 33 | 0.0116 | 61 | 0.0122 |
+| AMZN | 33 | 0.0148 | 61 | 0.0024 |
+
+**ETF vs single-name observations:**
+- Equity-index ETFs show classic put skew (QQQ 6.5, SPY 4.6, IWM 3.5 vol pts); commodity ETFs show call skew (USO −6.1, GLD −2.0, GDX −1.3, SLV −1.0) — upside-crash risk in commodities.
+- EWZ near skew 15.4 vol pts vs 3.4 far: event-driven (Brazil runoff in late Oct). FXI has only one qualifying expiry, so no term slope. Single-name skews (1–3 pts) are flatter than index skew, as expected (index skew embeds correlation risk).
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | Near Skew (11-20, 33d) | Far Skew (exp, DTE) | Term Slope (/day) |
@@ -115,3 +142,16 @@ With synthetic data (60 days, IC ~ 0.15-0.20):
 - "Option-Implied Risk-Neutral Distributions" — Bahra (1997)
 - CBOE Skew Index (SKEW) methodology
 - "Tail Risk and Asset Prices" — Kelly, Jiang (2014)
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **SPX skew (CBOE SKEW)** (`historical.py`). Hypothesized IC sign vs forward returns: **+**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_02`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | ts | -0.002 (-0.1) | -0.004 (-0.1) | -0.020 (-0.3) | -0.121 |
+| Fwd Δlog IV | ts | +0.018 (+1.4) | +0.045 (+1.5) | +0.124 (+2.0) | +0.198 |
+
+**Interpretation:** SKEW does not predict SPY returns (21d IC −0.02). It weakly predicts VIX rising (+0.12, t +2.0): high tail-hedging demand precedes higher vol, not a bounce. Hypothesis (fear → bounce) not supported.
+
+![cumulative IC](../figures/historical/alpha_02_iv_skew_dynamics.png)

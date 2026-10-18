@@ -70,6 +70,33 @@ This avoids single-strike noise and captures the "smile" around ATM.
 4. **Single expiration per day** — term structure effects not captured
 5. **Earnings/events** can cause temporary IV spikes not mean-reverting
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | atm_iv | iv_percentile | iv_zscore | n_observations |
+|---|---|---|---|---|
+| SPY | 0.1547 | 56.9 | 0.1400 | 262 |
+| QQQ | 0.2411 | 88.2 | 1.2600 | 262 |
+| IWM | 0.2121 | — | — | 1 |
+| DIA | 0.1625 | — | — | 1 |
+| GLD | 0.2238 | — | — | 1 |
+| SLV | 0.3717 | — | — | 1 |
+| TLT | 0.1569 | — | — | 1 |
+| EEM | 0.2745 | — | — | 1 |
+| EWZ | 0.7019 | — | — | 1 |
+| FXI | 0.4629 | — | — | 1 |
+| GDX | 0.4801 | — | — | 1 |
+| USO | 0.4895 | — | — | 1 |
+| AAPL | 0.3192 | 99.6 | 2.9600 | 262 |
+| MSFT | 0.3725 | 99.6 | 5.3600 | 262 |
+| GOOGL | 0.4328 | 100.0 | 5.0500 | 262 |
+| AMZN | 0.4751 | 100.0 | 6.0000 | 262 |
+
+**ETF vs single-name observations:**
+- ETFs have only 1 observation in `data/iv_history.json` (new to the universe), so percentile/z-score are undefined. The 6 original tickers' percentiles still rest on 260 synthetic days and are not meaningful.
+- Use the historical analysis (`historical.py`, CBOE vol-index history since 2004–2011) for real percentiles instead of this file.
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | ATM IV | IV Pctile | Z-Score | Hist Range | Obs | Signal |
@@ -120,3 +147,18 @@ With synthetic data (60 days, mean-reverting IV percentile vs forward returns):
 - "The Volatility Risk Premium" — Carr & Wu (2009)
 - CBOE VIX methodology (percentile-based signals)
 - "Option-Implied Volatility and Expected Returns" — Bali & Hovakimian (2009)
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **IV percentile (252d)** (`historical.py`). Hypothesized IC sign vs forward returns: **+**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_05`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | cs | +0.006 (+1.2) | -0.003 (-0.4) | -0.010 (-0.6) | -0.002 |
+| Fwd return | ts | +0.025 (+1.6) | +0.043 (+1.2) | +0.058 (+0.8) | +0.097 |
+| Fwd Δlog IV | cs | -0.078 (-15.9) | -0.178 (-19.9) | -0.353 (-24.8) | -0.359 |
+| Fwd Δlog IV | ts | -0.104 (-6.5) | -0.211 (-5.9) | -0.349 (-4.7) | -0.363 |
+
+**Interpretation:** No return predictability (21d IC −0.01). Very strongly predicts IV falling (−0.35, t −25): IV at the top of its 1-year range mean-reverts. That's a forecast of spot IV, which VIX futures/variance swaps already price; not tradable as-is.
+
+![cumulative IC](../figures/historical/alpha_05_iv_rank_percentile.png)

@@ -4,10 +4,9 @@
 Tests whether IV momentum (short-term IV trend) predicts forward returns.
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
 
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +18,7 @@ from datetime import datetime, timedelta
 from common.utils import compute_ic, compute_signal_metrics, rolling_ic, forward_return, forward_vol_change, forward_returns_available, signal_as_of
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 LOOKBACK_DAYS = 5
 HISTORY_FILE = "data/iv_momentum_history.json"
 

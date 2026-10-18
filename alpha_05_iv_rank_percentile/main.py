@@ -8,7 +8,8 @@ Low percentile (IV cheap) → mean reversion buy vol / equity outperformance.
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +20,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import json
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 HISTORY_PATH = "data/iv_history.json"  # Persistent IV history across runs
 

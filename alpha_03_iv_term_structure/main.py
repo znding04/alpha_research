@@ -6,7 +6,8 @@ Signal = (IV_long - IV_short) / (DTE_long - DTE_short) — positive = normal con
 negative = backwardation (fear/stress).
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -17,7 +18,7 @@ import yfinance as yf
 from datetime import datetime
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 MIN_DTE = 7  # skip expiring/weekly-noise legs (0-DTE IV is unreliable)
 # Regime thresholds on term_ratio = far_IV / near_IV (unit-free)
 CONTANGO_RATIO = 1.03       # far IV ≥ 3% above near → contango

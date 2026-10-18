@@ -71,6 +71,33 @@ Since yfinance provides noisy near-ATM IVs (often near-zero due to bid/ask artif
 4. **5-day lookback** — May be noisy; 10-20 day lookbacks also worth testing
 5. **Forward returns** — Current IC analysis uses realized forward returns (look-ahead for testing only)
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | atm_iv | expiration | momentum_pct | history_days |
+|---|---|---|---|---|
+| SPY | 0.1328 | 2026-10-26 | — | 4 |
+| QQQ | 0.2235 | 2026-10-26 | — | 4 |
+| IWM | 0.1806 | 2026-10-26 | — | 1 |
+| DIA | 0.1520 | 2026-10-30 | — | 1 |
+| GLD | 0.1878 | 2026-10-26 | — | 1 |
+| SLV | 0.3291 | 2026-10-26 | — | 1 |
+| TLT | 0.1377 | 2026-10-26 | — | 1 |
+| EEM | 0.2935 | 2026-10-30 | — | 1 |
+| EWZ | 0.8386 | 2026-10-30 | — | 1 |
+| FXI | 0.3164 | 2026-10-30 | — | 1 |
+| GDX | 0.4419 | 2026-10-26 | — | 1 |
+| USO | 0.4962 | 2026-10-28 | — | 1 |
+| AAPL | 0.2650 | 2026-10-26 | — | 4 |
+| MSFT | 0.2746 | 2026-10-26 | — | 4 |
+| GOOGL | 0.3340 | 2026-10-26 | — | 4 |
+| AMZN | 0.3508 | 2026-10-26 | — | 4 |
+
+**ETF vs single-name observations:**
+- Momentum is NaN for all 16 tickers: the ETFs have 1 history entry, and the original 6 have 4 entries that are placeholder IVs from early October.
+- Current front-expiry ATM IVs range from TLT 0.14 / SPY 0.13 to EWZ 0.84 (event-inflated). Liquidity filter loosened to vol>10 or OI>100 (repo standard) so thin ETF chains (FXI, GDX) qualify.
+
 ## Results (2026-10-16 close)
 
 *Run 2026-10-18 on Friday's closing chains (nearest liquid expiry 2026-10-26, 7 DTE).*
@@ -122,3 +149,18 @@ Since yfinance provides noisy near-ATM IVs (often near-zero due to bid/ask artif
 - "The Volatility Surface" — Jim Gatheral (IV dynamics)
 - CBOE VIX term structure / momentum studies
 - "IV Momentum and Equity Returns" — academic literature on IV trend following
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **IV momentum (5d)** (`historical.py`). Hypothesized IC sign vs forward returns: **−**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_12`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | cs | +0.007 (+1.4) | +0.010 (+1.4) | -0.007 (-0.9) | -0.008 |
+| Fwd return | ts | +0.012 (+0.8) | +0.019 (+0.5) | +0.006 (+0.1) | -0.010 |
+| Fwd Δlog IV | cs | -0.038 (-7.3) | -0.082 (-10.5) | -0.142 (-16.3) | -0.138 |
+| Fwd Δlog IV | ts | -0.053 (-3.4) | -0.117 (-3.4) | -0.138 (-1.9) | -0.116 |
+
+**Interpretation:** No return predictability (21d IC −0.007). Predicts IV reversal (−0.14, t −16): IV spikes fade. Same caveat as alpha_05: spot-IV mean reversion is priced in the futures curve.
+
+![cumulative IC](../figures/historical/alpha_12_iv_momentum.png)

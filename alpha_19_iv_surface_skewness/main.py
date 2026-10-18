@@ -6,7 +6,8 @@ Signal = smile skewness as proxy for risk-neutral skewness / tail risk expectati
 Positive skew = right-tail risk (call wing premium), negative = left-tail risk (put wing premium).
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -17,7 +18,7 @@ import yfinance as yf
 from datetime import datetime
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def compute_smile_skewness(ticker_str):
@@ -49,37 +50,40 @@ def compute_smile_skewness(ticker_str):
         if not valid_exps:
             return None
 
-        # Use the most liquid near-term expiration (typically the front month)
-        target_exp, target_dte = valid_exps[0]
-        target_str = target_exp.strftime("%Y-%m-%d")
+        # Nearest expiration in 7-45 DTE with enough liquid strikes (thin ETF weeklies
+        # such as GDX can fail the filter, so fall through to the next expiry)
+        for target_exp, target_dte in valid_exps:
+            target_str = target_exp.strftime("%Y-%m-%d")
 
-        chain = tq.option_chain(target_str)
-        calls = chain.calls.copy()
-        puts = chain.puts.copy()
+            chain = tq.option_chain(target_str)
+            calls = chain.calls.copy()
+            puts = chain.puts.copy()
 
-        # Fix dtypes: volume and openInterest are float64 with NaN
-        for df in [calls, puts]:
-            df['volume'] = df['volume'].fillna(0)
-            df['openInterest'] = df['openInterest'].fillna(0)
+            # Fix dtypes: volume and openInterest are float64 with NaN
+            for df in [calls, puts]:
+                df['volume'] = df['volume'].fillna(0)
+                df['openInterest'] = df['openInterest'].fillna(0)
 
-        # Filter liquid options with valid IV
-        calls = calls[
-            ((calls['volume'] > 10) | (calls['openInterest'] > 100)) &
-            (calls['impliedVolatility'].notna()) &
-            (calls['impliedVolatility'] > 0.01) &
-            (calls['impliedVolatility'] < 3.0) &
-            (calls['lastPrice'] > 0)
-        ].copy()
+            # Filter liquid options with valid IV
+            calls = calls[
+                ((calls['volume'] > 10) | (calls['openInterest'] > 100)) &
+                (calls['impliedVolatility'].notna()) &
+                (calls['impliedVolatility'] > 0.01) &
+                (calls['impliedVolatility'] < 3.0) &
+                (calls['lastPrice'] > 0)
+            ].copy()
 
-        puts = puts[
-            ((puts['volume'] > 10) | (puts['openInterest'] > 100)) &
-            (puts['impliedVolatility'].notna()) &
-            (puts['impliedVolatility'] > 0.01) &
-            (puts['impliedVolatility'] < 3.0) &
-            (puts['lastPrice'] > 0)
-        ].copy()
+            puts = puts[
+                ((puts['volume'] > 10) | (puts['openInterest'] > 100)) &
+                (puts['impliedVolatility'].notna()) &
+                (puts['impliedVolatility'] > 0.01) &
+                (puts['impliedVolatility'] < 3.0) &
+                (puts['lastPrice'] > 0)
+            ].copy()
 
-        if len(calls) < 5 or len(puts) < 5:
+            if len(calls) >= 5 and len(puts) >= 5:
+                break
+        else:
             return None
 
         # Combine and sort by strike

@@ -5,10 +5,9 @@ Tests whether put/call positioning (volume/OI weighted IV spreads and ratios)
 predicts forward returns.
 """
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
 
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -20,7 +19,7 @@ from datetime import datetime, timedelta
 from common.utils import compute_ic, compute_signal_metrics, rolling_ic, forward_return, forward_vol_change, forward_returns_available, signal_as_of
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def get_forward_returns(ticker_str, days_ahead=5, as_of=None):

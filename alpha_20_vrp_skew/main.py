@@ -9,7 +9,7 @@ Cross-sectional signal: rank tickers by VRP skew; long low VRP skew (call premiu
 """
 import os
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +19,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def get_realized_vol(ticker_str, lookback_days=30):

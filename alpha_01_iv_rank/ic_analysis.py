@@ -17,7 +17,7 @@ from datetime import datetime
 from common.utils import compute_ic, compute_signal_metrics, rolling_ic, forward_return, forward_vol_change, forward_returns_available, signal_as_of
 
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def get_forward_returns(ticker_str, days_ahead=5, as_of=None):

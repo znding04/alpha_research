@@ -90,6 +90,33 @@ Where `m = ln(K/S)` = log moneyness.
 5. **Moneyness window fixed** — 30% may be too wide/narrow for some tickers
 6. **Quadratic smile** — Can't capture put/call wing asymmetry beyond the linear skew term
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | dte | atm_iv | butterfly_25d | rel_butterfly | r2 |
+|---|---|---|---|---|---|
+| SPY | 33 | 0.1569 | 0.0019 | 0.0120 | 0.9780 |
+| QQQ | 33 | 0.2261 | 0.0037 | 0.0165 | 0.9750 |
+| IWM | 33 | 0.1946 | 0.0049 | 0.0250 | 0.9459 |
+| DIA | 33 | 0.1539 | 0.0023 | 0.0148 | 0.9880 |
+| GLD | 33 | 0.2128 | 0.0044 | 0.0207 | 0.9842 |
+| SLV | 33 | 0.3622 | 0.0095 | 0.0262 | 0.9892 |
+| TLT | 33 | 0.1497 | 0.0032 | 0.0212 | 0.9871 |
+| EEM | 33 | 0.2608 | 0.0083 | 0.0319 | 0.9504 |
+| EWZ | 33 | 0.5968 | -0.0075 | -0.0126 | 0.9251 |
+| FXI | 33 | 0.2695 | -0.0030 | -0.0111 | 0.4416 |
+| GDX | 33 | 0.4143 | 0.0101 | 0.0244 | 0.9069 |
+| USO | 33 | 0.4712 | 0.0148 | 0.0313 | 0.9235 |
+| AAPL | 33 | 0.2810 | 0.0036 | 0.0129 | 0.9492 |
+| MSFT | 33 | 0.3278 | 0.0040 | 0.0121 | 0.9525 |
+| GOOGL | 33 | 0.3767 | 0.0060 | 0.0160 | 0.8451 |
+| AMZN | 33 | 0.4079 | 0.0062 | 0.0152 | 0.8869 |
+
+**ETF vs single-name observations:**
+- Relative butterfly is lowest for SPY (1.2%) and highest for USO/EEM (3.1–3.2%); commodities and EM carry more priced jump risk than broad indices.
+- EWZ and FXI give negative curvature; FXI's fit is unreliable (R² 0.44, thin chain). Single names (1.2–1.6%) are close to the index level at 33 DTE.
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 Expiration used: 2026-11-20 (33 DTE) for all tickers.

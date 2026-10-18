@@ -74,6 +74,14 @@ vol_of_vol = iv_returns.rolling(20).std() * sqrt(252)
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 6. **Cross-sectional only 6 tickers** — Small universe limits statistical power for IC
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+**ETF vs single-name observations:**
+- Expanded universe adds 12 ETFs, but vol-of-vol still needs 20 days of ATM IV history per ticker (0 valid days today), so the script exits with "No valid data".
+- Historical vol-of-vol can be computed from CBOE vol-index history instead (see the historical analysis).
+
 ## Results (2026-10-16 close)
 
 *Run 2026-10-18 on Friday's closing chains. VoV not computed: the script printed "No valid data" because it needs 20 days of ATM IV history and only 2 snapshots exist.*
@@ -130,3 +138,18 @@ vol_of_vol = iv_returns.rolling(20).std() * sqrt(252)
 - "Volatility Risk Premia" — Dew-Becker et al. (2017)
 - "Option Implied Volatility of Volatility" — Alizadeh, Brandt, Diebold (2002)
 - VIX of VIX (VVIX) methodology — CBOE
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **Vol-of-vol (20d)** (`historical.py`). Hypothesized IC sign vs forward returns: **−**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_11`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | cs | +0.005 (+1.1) | +0.010 (+1.2) | +0.028 (+1.7) | -0.004 |
+| Fwd return | ts | +0.018 (+1.1) | +0.025 (+0.7) | +0.036 (+0.5) | +0.049 |
+| Fwd Δlog IV | cs | -0.019 (-3.5) | -0.008 (-0.8) | +0.003 (+0.2) | -0.030 |
+| Fwd Δlog IV | ts | -0.056 (-3.6) | -0.075 (-2.2) | -0.093 (-1.3) | -0.143 |
+
+**Interpretation:** No return predictability (21d IC +0.03, wrong sign vs hypothesis, t +1.7) and no vol predictability. Hypothesis not supported.
+
+![cumulative IC](../figures/historical/alpha_11_vol_of_vol.png)

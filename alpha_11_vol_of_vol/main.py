@@ -10,7 +10,8 @@ Cross-sectionally: Tickers with rising vol-of-vol signal regime instability
 """
 
 import os
-os.environ.setdefault("PYTHONPATH", "/Users/znding04/Work/alpha_research")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -20,7 +21,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 # Historical data file for building IV time series
 DATA_PATH = "data/vol_of_vol_history.csv"

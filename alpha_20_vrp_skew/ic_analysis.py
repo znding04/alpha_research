@@ -5,7 +5,7 @@ Tests cross-sectional predictive power of VRP skew on forward returns.
 """
 import os
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -16,7 +16,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 from common.utils import compute_ic, rolling_ic, compute_signal_metrics, half_life_of_mean_reversion
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def get_realized_vol(ticker_str, lookback_days=30):

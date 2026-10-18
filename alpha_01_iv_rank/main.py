@@ -2,7 +2,7 @@
 """Compute IV Rank alpha signal for a watchlist of tickers."""
 import os
 import sys
-sys.path.insert(0, "/Users/znding04/Work/alpha_research")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -12,7 +12,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
-TICKERS = ["AAPL", "SPY", "QQQ", "MSFT", "GOOGL", "AMZN"]
+from common.universe import TICKERS
 
 
 def compute_iv_rank(ticker_str):
@@ -60,7 +60,7 @@ def compute_iv_rank(ticker_str):
         
         # Filter: liquid + valid IV + positive price + reasonable IV (not near-zero)
         df = df[
-            ((df['volume'] > 50) | (df['openInterest'] > 500)) &
+            ((df['volume'] > 10) | (df['openInterest'] > 100)) &  # repo-standard liquidity; >50/>500 dropped thin ETF chains (FXI, GDX)
             (df['impliedVolatility'].notna()) &
             (df['impliedVolatility'] > 0.01) &  # Filter out near-zero IV (bid=ask=0)
             (df['impliedVolatility'] < 3.0) &

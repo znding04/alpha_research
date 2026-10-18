@@ -74,6 +74,33 @@ Negative VRP = realized vol exceeded implied (rare, stress periods).
 4. **ATM IV only** — Doesn't capture skew/smile information
 5. **Market hours bias** — Bid/ask often 0 after hours; relies on lastPrice-derived IV
 
+## Results — expanded ETF universe (2026-10-16 close)
+
+Universe: 12 ETFs (SPY, QQQ, IWM, DIA, GLD, SLV, TLT, EEM, EWZ, FXI, GDX, USO) + AAPL, MSFT, GOOGL, AMZN, from `common/universe.py`. Raw: `data/snapshots/2026-10-16/`.
+
+| ticker | atm_iv | realized_vol | vrp_variance | vrp_ratio |
+|---|---|---|---|---|
+| SPY | 0.1547 | 0.1015 | 0.0136 | 2.3218 |
+| QQQ | 0.2411 | 0.1680 | 0.0299 | 2.0583 |
+| IWM | 0.2121 | 0.1312 | 0.0278 | 2.6119 |
+| DIA | 0.1625 | 0.1023 | 0.0160 | 2.5238 |
+| GLD | 0.2238 | 0.2035 | 0.0087 | 1.2093 |
+| SLV | 0.3717 | 0.3975 | -0.0198 | 0.8744 |
+| TLT | 0.1569 | 0.1074 | 0.0131 | 2.1349 |
+| EEM | 0.2745 | 0.2178 | 0.0280 | 1.5895 |
+| EWZ | 0.7019 | 0.4065 | 0.3274 | 2.9814 |
+| FXI | 0.4629 | 0.1936 | 0.1768 | 5.7182 |
+| GDX | 0.4801 | 0.3870 | 0.0807 | 1.5387 |
+| USO | 0.4895 | 0.4049 | 0.0756 | 1.4612 |
+| AAPL | 0.3192 | 0.1978 | 0.0627 | 2.6038 |
+| MSFT | 0.3725 | 0.2222 | 0.0894 | 2.8108 |
+| GOOGL | 0.4328 | 0.2353 | 0.1320 | 3.3843 |
+| AMZN | 0.4751 | 0.2357 | 0.1701 | 4.0630 |
+
+**ETF vs single-name observations:**
+- ETF VRP ratios cluster 1.2–2.6 (SPY 2.32, QQQ 2.06, IWM 2.61); SLV is the only negative VRP (RV 0.40 > IV 0.37 after a volatile month).
+- FXI (5.7) and EWZ (3.0) top the ranking on event/thin-chain IV; single names (2.6–4.1) are inflated by late-Oct earnings in the expiry used. For a clean cross-sectional VRP signal, the ETF subset is preferable until an earnings filter exists.
+
 ## Results (2026-10-16 close, run 2026-10-18)
 
 | Ticker | Price | ATM IV | Realized Vol (30d) | VRP (IV²-RV²) | VRP (vol pts) | VRP Ratio (IV²/RV²) |
@@ -133,3 +160,18 @@ With synthetic data (60 days, positive correlation between VRP and returns):
 - "Expected Returns and the Variance Risk Premium" — Bekaert, Hoerova (2014)
 - CBOE VIX methodology (model-free implied variance)
 - "Volatility Risk Premiums" — Dew-Becker et al. (2017)
+
+## Historical Analysis (CBOE implied-vol indices, through 2026-10-16)
+
+Signal: **VRP (IV² − RV²)** (`historical.py`). Hypothesized IC sign vs forward returns: **+**. Signal at close t, forward window from close t+1. `cs` = daily cross-sectional rank IC (NW t-stat); `ts` = per-ticker time-series rank IC, averaged (t ≈ IC·√(N/h)). Run: `python3 run_historical.py alpha_04`.
+
+| Target | Kind | 1d IC (t) | 5d IC (t) | 21d IC (t) | 21d IC post-2019 |
+|---|---|---|---|---|---|
+| Fwd return | cs | +0.008 (+1.6) | +0.013 (+1.4) | +0.007 (+0.4) | +0.035 |
+| Fwd return | ts | +0.011 (+0.7) | +0.022 (+0.6) | +0.026 (+0.4) | +0.026 |
+| Fwd Δlog IV | cs | -0.001 (-0.3) | -0.026 (-3.1) | -0.144 (-9.5) | -0.143 |
+| Fwd Δlog IV | ts | -0.036 (-2.4) | -0.078 (-2.2) | -0.163 (-2.2) | -0.143 |
+
+**Interpretation:** No return predictability (cross-sectional 21d IC +0.007, t +0.4). Sign flipped over time: negative 2011–2017, positive since 2021. Strongly predicts IV *falling* (−0.14, t −9.5): high IV relative to RV mean-reverts. Hypothesis (high VRP → higher returns) not supported.
+
+![cumulative IC](../figures/historical/alpha_04_vrp.png)
