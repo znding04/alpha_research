@@ -1,0 +1,13 @@
+instrument,period,controls,alpha_ann,alpha_t,beta_always_short,n,beta_basis_timing,beta_vix_timing
+CM futures,OOS,always short,-0.1041,-0.5961,0.3351,1959,,
+CM futures,OOS,always short + basis timing,0.0525,1.3171,-0.029,1959,0.9991,
+CM futures,OOS,always short + VIX timing,0.058,0.663,0.056,1959,,0.8259
+CM futures,full,always short,-0.2673,-2.2285,0.3728,4070,,
+CM futures,full,always short + basis timing,0.0768,2.6228,-0.0294,4070,0.9936,
+CM futures,full,always short + VIX timing,-0.0802,-1.2132,0.1062,4070,,0.7806
+VIXY,OOS,always short,-0.0602,-0.3477,0.3546,1958,,
+VIXY,OOS,always short + basis timing,0.0488,1.2625,-0.027,1958,1.001,
+VIXY,OOS,always short + VIX timing,0.0628,0.7374,0.0612,1958,,0.8311
+VIXY,full,always short,-0.1719,-1.475,0.3227,3768,,
+VIXY,full,always short + basis timing,0.0611,2.1187,-0.0346,3768,0.9957,
+VIXY,full,always short + VIX timing,-0.0319,-0.5003,0.0816,3768,,0.7981

@@ -207,3 +207,26 @@ SPY by term-ratio quintile (21d, 2009–2026, ~790 days each):
 3. **The unhedged return IC is mostly the VIX level.** VIX alone has IC +0.16 (t +2.7) for 21d SPY returns; the term ratio net of VIX drops to −0.08 (t −1.1), though −0.17 post-2019. So "backwardation → buy the index" is largely "high VIX → buy the index".
 
 **Bottom line:** alpha_03 is better described as a **volatility-timing signal** than an equity-return signal: steep contango favors selling 30d vol held to expiry, and is followed by short-term VIX upticks. Next steps: test with real SPX option prices (bid/ask) to see if the 1–5d edge survives costs, and test VIX futures (roll yield) as the cleaner tradable instrument.
+
+## Tradability Test on VIX Futures (pre-registered) — VERDICT: NOT a valid alpha
+
+Script: `vix_futures_test.py` (design and pass rule written in its header before results were computed). Data: 30-day constant-maturity VIX futures built from CBOE VX settlements (`common/vix_futures.py`, 0.95 daily correlation with VIXY) and the VIXY ETF. Output: `results/alpha_03_vixfut_{ic,perf,alpha}.csv`, `figures/historical/alpha_03_vix_futures.png`.
+
+**Design:** signal unchanged; in-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges. Strategy w = s·(2·trailing-252d percentile − 1), 1-day lag, daily rebalance. Costs: 0.025 vol-pt half-spread on futures; 5 bp + 3%/yr borrow on VIXY shorts.
+**Pass rule:** (i) OOS IC vs 5d futures return has the IS sign with |t| ≥ 2, **and** (ii) OOS strategy alpha > 0 with NW |t| ≥ 2 after controlling for always-short and futures-basis timing.
+
+| Check (CM futures, OOS 2019–2026) | Result | |
+|---|---|---|
+| (i) IC vs 5d fwd futures return | +0.149 (t +3.0), IS sign + | PASS |
+| (ii) alpha vs always-short + basis timing | +5.2%/yr (t +1.3) | **FAIL** |
+| Strategy (pre-registered direction, s = +1), after costs | −9.7%/yr, Sharpe 0.08, max DD −87% | |
+| Always short VIX futures (benchmark) | +12.3%/yr, Sharpe 0.56, max DD −87% | |
+
+VIXY gives the same answer (OOS IC +0.154, t +3.1; alpha vs short + basis +4.9%/yr, t +1.3).
+
+**Why it fails despite a significant IC:**
+1. **It is the futures basis in disguise.** Regressed on the futures-basis timing strategy, alpha_03's strategy has beta 1.00: the spot VIX term structure carries the same information as the VIX futures curve, which the market already prices.
+2. **Positive rank IC, negative P&L.** VIX futures lose money on average in *every* signal quintile (OOS mean 5d return −1.5% to +0.3%). The signal ranks how much they lose, not when they gain, so any long leg bleeds roll yield. The opposite direction (s = −1) loses −25%/yr OOS, and a post-hoc "short only in steep contango" rule loses −11%/yr OOS.
+3. **Earlier results explained:** the return IC was mostly the VIX level; the delta-hedged 1–5d long-vol gains are the same "VIX drifts up toward VIX3M" effect, which VIX futures already price, so it is not capturable.
+
+**Conclusion:** alpha_03 carries real information about volatility, but nothing tradable beyond what the VIX futures curve already prices. The only profitable trade in this family is the unconditional short-vol carry (~+12%/yr OOS, with −87% to −99.6% drawdowns, e.g. February 2018), and the term-structure signal does not improve it. Status: **rejected as a standalone alpha**; keep only as a regime/risk feature.

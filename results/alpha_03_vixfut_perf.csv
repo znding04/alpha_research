@@ -1,0 +1,17 @@
+instrument,strategy,period,ann_ret,ann_vol,sharpe,max_dd,n
+CM futures,term_ratio (alpha_03) timing (s=+1),IS,-0.374,0.5485,-0.4239,-0.984,2111
+CM futures,term_ratio (alpha_03) timing (s=+1),OOS,-0.0968,0.5116,0.075,-0.8722,1959
+CM futures,vix_level timing (s=-1),IS,-0.3121,0.5362,-0.287,-0.9758,2303
+CM futures,vix_level timing (s=-1),OOS,-0.1785,0.5209,-0.101,-0.9143,1959
+CM futures,futures_basis timing (s=+1),IS,-0.4477,0.5492,-0.6269,-0.9962,2303
+CM futures,futures_basis timing (s=+1),OOS,-0.1322,0.5106,-0.0035,-0.8717,1959
+CM futures,always short (benchmark),IS,-0.1151,0.7454,0.6998,-0.996,2504
+CM futures,always short (benchmark),OOS,0.1234,0.7571,0.5614,-0.8738,1959
+VIXY,term_ratio (alpha_03) timing (s=+1),IS,-0.202,0.4296,-0.3034,-0.8509,1810
+VIXY,term_ratio (alpha_03) timing (s=+1),OOS,-0.0662,0.5087,0.141,-0.8631,1958
+VIXY,vix_level timing (s=-1),IS,-0.1423,0.4236,-0.1452,-0.7517,1810
+VIXY,vix_level timing (s=-1),OOS,-0.1482,0.5172,-0.0321,-0.9038,1958
+VIXY,futures_basis timing (s=+1),IS,-0.2457,0.4355,-0.4215,-0.8955,1810
+VIXY,futures_basis timing (s=+1),OOS,-0.1011,0.5067,0.0649,-0.8619,1958
+VIXY,always short (benchmark),IS,0.2374,0.6512,0.666,-0.7259,2011
+VIXY,always short (benchmark),OOS,0.0845,0.7348,0.5061,-0.8872,1958

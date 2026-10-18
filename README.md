@@ -31,6 +31,7 @@ alpha_research/
 │   ├── history.py        # CBOE implied-vol index + price history loader (cached)
 │   ├── ic_engine.py      # Shared historical IC engine (cross-sectional & time-series)
 │   ├── hedged.py         # Delta-hedged straddle / variance-swap P&L targets
+│   ├── vix_futures.py    # CBOE VX settlements → 30d constant-maturity VIX futures returns
 │   └── utils.py          # IC helpers, forward returns for live snapshots
 ├── run_historical.py     # Runs every alpha_*/historical.py → results/ + figures/historical/
 ├── collect_snapshots.py  # Runs every main.py, archives outputs to data/snapshots/<date>/
@@ -54,7 +55,7 @@ Status legend (2026-10-18). **Live status**: ✅ signal computes on today's chai
 |---|---|---|---|---|---|
 | **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a |
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew (Black-Scholes delta) at ~30d / ~75d & skew term slope | ✅ Snapshot OK | ❌ **−0.020** (t −0.3), SPY time-series | not yet tested |
-| **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV term structure slope & far/near ratio (also covers calendar spread) | ✅ Snapshot OK | ✅ **−0.195** (t −2.8), SPY time-series | ⚠️ straddle 1d **+0.131** (t +8.2), 21d to expiry **−0.137** (t −1.9); net of VIX level: return IC −0.08 (t −1.1). Details in notes |
+| **IV Term Structure Slope** | `alpha_03_iv_term_structure/` | ATM IV term structure slope & far/near ratio (also covers calendar spread) | ✅ Snapshot OK | ❌ **Rejected (VIX-futures test)**. Return IC −0.195 (t −2.8) is mostly the VIX level; no tradable alpha net of the futures basis (OOS alpha +5%/yr, t +1.3) | straddle 1d **+0.131** (t +8.2), 21d to expiry **−0.137** (t −1.9); priced in by VIX futures. Details in notes |
 | **VRP (Variance Risk Premium)** | `alpha_04_vrp/` | IV² − RV² variance risk premium | ✅ Snapshot OK | ❌ **+0.007** (t +0.4), 17-name cross-section | not yet tested |
 | **IV Rank Percentile** | `alpha_05_iv_rank_percentile/` | Current ATM IV percentile vs 1-year range | ⚠️ Live history synthetic (historical version OK) | ❌ **−0.010** (t −0.6), 17-name cross-section | not yet tested |
 | **VRP Term Structure** | `alpha_06_vrp_term_structure/` | VRP slope & curvature across expirations (also covers VRP carry) | ✅ Snapshot OK | ❌ **−0.041** (t −0.6), SPY time-series | not yet tested |
@@ -90,8 +91,7 @@ Run `python3 run_historical.py` (add `--refresh` to re-download data). Each alph
 | alpha_15_iv_term_momentum | ts | + | -0.007 | -0.1 | +0.002 | +0.132 | +1.9 | ❌ not significant |
 
 **Key findings**
-- **Only the IV term structure (alpha_03) predicts index returns significantly**: backwardation (VIX3M/VIX low) precedes higher returns, IC −0.19 at 21d (t −2.8) for SPY, with the same sign on QQQ/IWM/DIA and post-2019. **But most of it is the VIX level**: VIX alone has IC +0.16 (t +2.7), and the term ratio net of VIX drops to −0.08 (t −1.1).
-- **After delta hedging, alpha_03 is a vol-timing signal.** Contango predicts gains on long hedged straddles over 1–5 days (IC +0.13, t ≈ 8 at 1d on all four index ETFs; +0.08, t +5.3 net of VIX), as VIX drifts up toward VIX3M. Held to expiry the sign flips: steep contango favors short vol (hedged straddle −25% in the top quintile vs −16% in backwardation; IC −0.17, t −2.4 net of VIX). Marks use index-derived IVs, not traded option prices, and ignore bid/ask; real-price tests are the next step. See `alpha_03_iv_term_structure/notes.md`.
+- **The best candidate, the IV term structure (alpha_03), failed a pre-registered tradability test.** It predicts index returns (IC −0.19 at 21d, t −2.8) and delta-hedged straddle returns (IC +0.13 at 1d, t +8), but the return IC is mostly the VIX level, and on VIX futures (2019–2026 out-of-sample, after costs) its timing strategy is a near-copy of futures-basis timing (beta 1.00) with no significant extra return (+5%/yr, t +1.3). VIX futures lose money in every signal quintile, so the signal ranks losses rather than finding gains. Verdict: real information about volatility, but already priced; not a valid alpha. Details: `alpha_03_iv_term_structure/notes.md`.
 - **Implied correlation (alpha_07, COR3M)** is borderline: +0.12 at 21d (t +1.9), +0.07 at 5d with t ≈ 2 across all four index ETFs.
 - **VRP, IV percentile, IV momentum, vol-of-vol show no return predictability**, cross-sectionally or per ticker. VRP's cross-sectional IC was negative 2011–2017 and positive since 2021, so it is regime-dependent, not a stable premium.
 - **Many signals strongly predict the *change in IV*** (IV percentile −0.35, t −25; IV momentum −0.14; VRP −0.14): high or rising IV falls back. That is ordinary vol mean reversion. It is **not directly tradable**: VIX futures and variance swaps already price the expected reversion (the futures curve slopes toward the mean), so a spot-IV forecast is not a P&L forecast. Testing against VIX-futures or straddle returns is the next step before treating these as vol alphas.
