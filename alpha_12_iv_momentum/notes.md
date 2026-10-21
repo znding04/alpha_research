@@ -164,3 +164,14 @@ Signal: **IV momentum (5d)** (`historical.py`). Hypothesized IC sign vs forward 
 **Interpretation:** No return predictability (21d IC −0.007). Predicts IV reversal (−0.14, t −16): IV spikes fade. Same caveat as alpha_05: spot-IV mean reversion is priced in the futures curve.
 
 ![cumulative IC](../figures/historical/alpha_12_iv_momentum.png)
+
+## Tradability Validation (pre-registered 2026-10-20) — VERDICT: NOT a valid alpha (real gross edge, eaten by costs)
+
+Design in `validation.py` (written before any strategy numbers were computed), shared rule in `common/validation.py`, run with `python3 run_validation.py alpha_12`. Primary test: each week rank the 15 names with a CBOE vol index by the signal and hold a rank-weighted long/short book of 5-day delta-hedged 30d ATM straddles (flat IV from each name's index), non-overlapping weeks, 3% of premium round trip. Controls: equal-weight short straddles (the unconditional VRP harvest) and an IV-level long/short. In-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges.
+
+| Test (OOS 2019–2026) | IC vs next straddle return | Alpha vs all benchmarks | Gross (Sharpe) | Net | Break-even cost | Result |
+|---|---|---|---|---|---|---|
+| **Primary: cross-section of hedged straddles** | -0.064 (t -3.7), IS -0.035 | -168%/yr (t -4.1) | +21%/yr (0.52) | -76.5%/yr (Sharpe -3.20) | 0.42% of premium vs 3% assumed | **FAIL** (ii) |
+| Secondary: time 30d VIX futures with the SPX value | -0.076 (t -1.5), IS -0.099 | -3%/yr (t -0.2) | | -10.3%/yr (Sharpe +0.04) | | fail (not scored) |
+
+**Reading:** Same IV mean-reversion effect as alpha_05, weaker: OOS IC −0.064 (t −3.7), +21%/yr gross (Sharpe 0.52), break-even 0.4% of premium round trip. Not tradable at realistic straddle costs. On VIX futures: IC −0.08 (t −1.5), no alpha over VIX-level and basis timing.

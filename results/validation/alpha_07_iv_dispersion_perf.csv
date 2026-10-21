@@ -1,0 +1,15 @@
+strategy,period,ann_ret,ann_vol,sharpe,max_dd,n,instrument
+alpha_07 timing (s=+1),IS,0.0113,0.139,0.1501,-0.274,3068,SPY
+alpha_07 timing (s=+1),OOS,0.0225,0.1497,0.2239,-0.281,1958,SPY
+vix_level timing (s=+1),IS,-0.0134,0.1407,-0.0256,-0.4442,3573,SPY
+vix_level timing (s=+1),OOS,0.0078,0.1458,0.126,-0.3231,1958,SPY
+buy & hold (benchmark),IS,0.077,0.1827,0.4974,-0.5519,3775,SPY
+buy & hold (benchmark),OOS,0.1714,0.192,0.9206,-0.3372,1958,SPY
+alpha_07 timing (s=-1),IS,0.0461,0.456,0.3297,-0.6593,2302,30d VIX futures
+alpha_07 timing (s=-1),OOS,0.0395,0.515,0.3404,-0.7971,1959,30d VIX futures
+vix_level timing (s=-1),IS,-0.3123,0.5364,-0.2873,-0.9755,2302,30d VIX futures
+vix_level timing (s=-1),OOS,-0.1785,0.5209,-0.101,-0.9143,1959,30d VIX futures
+futures_basis timing (s=+1),IS,-0.4479,0.5493,-0.627,-0.9962,2302,30d VIX futures
+futures_basis timing (s=+1),OOS,-0.1322,0.5106,-0.0035,-0.8717,1959,30d VIX futures
+always short (benchmark),IS,-0.1151,0.7454,0.6998,-0.996,2504,30d VIX futures
+always short (benchmark),OOS,0.1234,0.7571,0.5614,-0.8738,1959,30d VIX futures

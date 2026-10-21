@@ -175,3 +175,14 @@ Signal: **VRP (IV² − RV²)** (`historical.py`). Hypothesized IC sign vs forwa
 **Interpretation:** No return predictability (cross-sectional 21d IC +0.007, t +0.4). Sign flipped over time: negative 2011–2017, positive since 2021. Strongly predicts IV *falling* (−0.14, t −9.5): high IV relative to RV mean-reverts. Hypothesis (high VRP → higher returns) not supported.
 
 ![cumulative IC](../figures/historical/alpha_04_vrp.png)
+
+## Tradability Validation (pre-registered 2026-10-20) — VERDICT: NOT a valid alpha (real gross edge, eaten by costs)
+
+Design in `validation.py` (written before any strategy numbers were computed), shared rule in `common/validation.py`, run with `python3 run_validation.py alpha_04`. Primary test: each week rank the 15 names with a CBOE vol index by the signal and hold a rank-weighted long/short book of 5-day delta-hedged 30d ATM straddles (flat IV from each name's index), non-overlapping weeks, 3% of premium round trip. Controls: equal-weight short straddles (the unconditional VRP harvest) and an IV-level long/short. In-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges.
+
+| Test (OOS 2019–2026) | IC vs next straddle return | Alpha vs all benchmarks | Gross (Sharpe) | Net | Break-even cost | Result |
+|---|---|---|---|---|---|---|
+| **Primary: cross-section of hedged straddles** | -0.030 (t -2.0), IS -0.023 | -149%/yr (t -5.0) | +31%/yr (0.89) | -72.2%/yr (Sharpe -3.54) | 0.61% of premium vs 3% assumed | **FAIL** (ii) |
+| Secondary: time 30d VIX futures with the SPX value | -0.023 (t -0.5), IS -0.090 | -8%/yr (t -0.5) | | -16.2%/yr (Sharpe -0.05) | | fail (not scored) |
+
+**Reading:** VRP's cross-sectional straddle IC is weak (−0.03, t −2.0). Selling straddles where VRP is highest earns +31%/yr gross (Sharpe 0.89), but trading weekly costs about 150%/yr of premium. Break-even is 0.6% of premium round trip, below any realistic straddle spread outside SPY. On VIX futures the SPX VRP has no information (IC −0.02).

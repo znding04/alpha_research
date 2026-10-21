@@ -162,3 +162,14 @@ Signal: **IV percentile (252d)** (`historical.py`). Hypothesized IC sign vs forw
 **Interpretation:** No return predictability (21d IC −0.01). Very strongly predicts IV falling (−0.35, t −25): IV at the top of its 1-year range mean-reverts. That's a forecast of spot IV, which VIX futures/variance swaps already price; not tradable as-is.
 
 ![cumulative IC](../figures/historical/alpha_05_iv_rank_percentile.png)
+
+## Tradability Validation (pre-registered 2026-10-20) — VERDICT: NOT a valid alpha (real gross edge, eaten by costs)
+
+Design in `validation.py` (written before any strategy numbers were computed), shared rule in `common/validation.py`, run with `python3 run_validation.py alpha_05`. Primary test: each week rank the 15 names with a CBOE vol index by the signal and hold a rank-weighted long/short book of 5-day delta-hedged 30d ATM straddles (flat IV from each name's index), non-overlapping weeks, 3% of premium round trip. Controls: equal-weight short straddles (the unconditional VRP harvest) and an IV-level long/short. In-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges.
+
+| Test (OOS 2019–2026) | IC vs next straddle return | Alpha vs all benchmarks | Gross (Sharpe) | Net | Break-even cost | Result |
+|---|---|---|---|---|---|---|
+| **Primary: cross-section of hedged straddles** | -0.084 (t -5.0), IS -0.055 | -121%/yr (t -5.4) | +41%/yr (1.35) | -68.6%/yr (Sharpe -3.57) | 0.82% of premium vs 3% assumed | **FAIL** (ii) |
+| Secondary: time 30d VIX futures with the SPX value | -0.086 (t -1.7), IS -0.070 | -14%/yr (t -2.0) | | -27.3%/yr (Sharpe -0.30) | | fail (not scored) |
+
+**Reading:** The IV mean-reversion effect **does** show up in option P&L: names with IV high in their own 1-year range have worse subsequent hedged-straddle returns (OOS IC −0.084, t −5.0, stronger than IS). Selling them and buying the low-percentile names earns +41%/yr gross of costs (Sharpe 1.35, the best gross number in the repo). The trade turns over the whole book weekly, though, and the edge is ~0.8% of premium per round trip vs a ≥1.5–3% realistic straddle spread. On VIX futures it is just VIX-level timing and loses money. Next step (new pre-registration): a lower-turnover version (monthly holds to expiry, trade only when ranks change) and real bid/ask from option-chain snapshots.

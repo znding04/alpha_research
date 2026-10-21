@@ -210,7 +210,9 @@ SPY by term-ratio quintile (21d, 2009–2026, ~790 days each):
 
 ## Tradability Test on VIX Futures (pre-registered) — VERDICT: NOT a valid alpha
 
-Script: `vix_futures_test.py` (design and pass rule written in its header before results were computed). Data: 30-day constant-maturity VIX futures built from CBOE VX settlements (`common/vix_futures.py`, 0.95 daily correlation with VIXY) and the VIXY ETF. Output: `results/alpha_03_vixfut_{ic,perf,alpha}.csv`, `figures/historical/alpha_03_vix_futures.png`.
+Script: `validation.py`, run with `python3 run_validation.py alpha_03` (design written in its header before results were computed; first run as a one-off script on 2026-10-18, since ported unchanged to the shared pipeline in `common/validation.py`). Data: 30-day constant-maturity VIX futures built from CBOE VX settlements (`common/vix_futures.py`, 0.95 daily correlation with VIXY) and the VIXY ETF. Output: `results/validation/alpha_03_iv_term_structure_{ic,perf,alpha}.csv`, `figures/validation/alpha_03_iv_term_structure.png`.
+
+*Pipeline re-run (2026-10-20):* identical IC and strategy returns. Controlling for all three benchmarks at once (always short + basis timing + VIX timing) gives OOS alpha +6.1%/yr (t +1.5), still a FAIL. Gross of costs the strategy makes +10%/yr OOS (Sharpe 0.20); break-even cost is 0.21% of notional per unit traded vs the assumed 0.13%.
 
 **Design:** signal unchanged; in-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges. Strategy w = s·(2·trailing-252d percentile − 1), 1-day lag, daily rebalance. Costs: 0.025 vol-pt half-spread on futures; 5 bp + 3%/yr borrow on VIXY shorts.
 **Pass rule:** (i) OOS IC vs 5d futures return has the IS sign with |t| ≥ 2, **and** (ii) OOS strategy alpha > 0 with NW |t| ≥ 2 after controlling for always-short and futures-basis timing.

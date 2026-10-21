@@ -1,0 +1,10 @@
+period,controls,alpha_ann,alpha_t,beta[iv_level long/short],n,beta[equal-weight short (benchmark)],instrument,beta[vix_level timing],beta[futures_basis timing],beta[always short (benchmark)]
+OOS,iv_level long/short,-1.2125,-5.594,-0.0777,391,,delta-hedged straddles (15 names),,,
+OOS,equal-weight short (benchmark),-1.1023,-10.0214,,391,-0.021,delta-hedged straddles (15 names),,,
+OOS,ALL benchmarks,-1.2063,-5.3524,-0.0713,391,-0.0155,delta-hedged straddles (15 names),,,
+full,ALL benchmarks,-1.4795,-7.6466,-0.1438,1095,-0.0305,delta-hedged straddles (15 names),,,
+OOS,vix_level timing,-0.1129,-1.484,,1959,,30d VIX futures,0.9341,,
+OOS,futures_basis timing,-0.1603,-2.2124,,1959,,30d VIX futures,,0.9612,
+OOS,always short (benchmark),-0.3134,-1.7745,,1959,,30d VIX futures,,,0.356
+OOS,ALL benchmarks,-0.1357,-2.0261,,1959,,30d VIX futures,0.4701,0.5449,-0.0015
+full,ALL benchmarks,-0.0163,-0.3776,,4261,,30d VIX futures,0.5394,0.4535,0.0231

@@ -1,0 +1,37 @@
+signal,h,period,ic,t,n,instrument
+alpha_03,1,IS,0.047,2.2567,2310,30d VIX futures
+alpha_03,1,OOS,0.1316,5.822,1957,30d VIX futures
+alpha_03,5,IS,0.0618,1.3274,2310,30d VIX futures
+alpha_03,5,OOS,0.1494,2.952,1953,30d VIX futures
+alpha_03,21,IS,0.0635,0.6662,2310,30d VIX futures
+alpha_03,21,OOS,0.216,2.0747,1937,30d VIX futures
+vix_level,1,IS,-0.0775,-3.8761,2502,30d VIX futures
+vix_level,1,OOS,-0.1256,-5.5546,1957,30d VIX futures
+vix_level,5,IS,-0.1257,-2.8111,2502,30d VIX futures
+vix_level,5,OOS,-0.1608,-3.1787,1953,30d VIX futures
+vix_level,21,IS,-0.2169,-2.3675,2502,30d VIX futures
+vix_level,21,OOS,-0.271,-2.6023,1937,30d VIX futures
+futures_basis,1,IS,0.0241,1.2059,2502,30d VIX futures
+futures_basis,1,OOS,0.1257,5.5604,1957,30d VIX futures
+futures_basis,5,IS,0.0229,0.5121,2502,30d VIX futures
+futures_basis,5,OOS,0.1462,2.8886,1953,30d VIX futures
+futures_basis,21,IS,-0.0185,-0.2019,2502,30d VIX futures
+futures_basis,21,OOS,0.1989,1.9104,1937,30d VIX futures
+alpha_03,1,IS,0.0318,1.4267,2011,VIXY
+alpha_03,1,OOS,0.1372,6.0719,1958,VIXY
+alpha_03,5,IS,0.0354,0.7096,2011,VIXY
+alpha_03,5,OOS,0.1549,3.0614,1954,VIXY
+alpha_03,21,IS,0.0395,0.3864,2011,VIXY
+alpha_03,21,OOS,0.2239,2.1508,1938,VIXY
+vix_level,1,IS,-0.0712,-3.1908,2011,VIXY
+vix_level,1,OOS,-0.1318,-5.8329,1958,VIXY
+vix_level,5,IS,-0.1232,-2.4709,2011,VIXY
+vix_level,5,OOS,-0.1694,-3.3489,1954,VIXY
+vix_level,21,IS,-0.1874,-1.8342,2011,VIXY
+vix_level,21,OOS,-0.2873,-2.76,1938,VIXY
+futures_basis,1,IS,0.0219,0.9746,1984,VIXY
+futures_basis,1,OOS,0.1313,5.8105,1958,VIXY
+futures_basis,5,IS,0.0126,0.2505,1984,VIXY
+futures_basis,5,OOS,0.1515,2.9953,1954,VIXY
+futures_basis,21,IS,-0.0338,-0.3287,1984,VIXY
+futures_basis,21,OOS,0.2075,1.9935,1938,VIXY

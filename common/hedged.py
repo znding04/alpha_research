@@ -66,16 +66,17 @@ def variance_swap_pnl(prices: pd.Series, iv: pd.Series, h: int = 21, lag: int = 
     return fwd_rv2 - iv.shift(-lag) ** 2
 
 
-def hedged_straddle_returns(prices: pd.Series, iv_fn, h: int, lag: int = 1) -> pd.Series:
+def hedged_straddle_returns(prices: pd.Series, iv_fn, h: int, lag: int = 1, step: int = 1) -> pd.Series:
     """Delta-hedged 30d ATM straddle return over h trading days, aligned to signal date t.
 
     iv_fn(date, days_array) -> IV for those remaining maturities on that date.
+    step: compute only every step-th signal date (step = h gives non-overlapping periods).
     """
     px = prices.dropna()
     dates = px.index
     S = px.values
     out = {}
-    for i in range(len(dates) - lag - h):
+    for i in range(0, len(dates) - lag - h, step):
         i0 = i + lag
         d0 = dates[i0]
         K = S[i0]

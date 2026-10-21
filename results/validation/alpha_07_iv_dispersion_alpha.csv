@@ -1,0 +1,10 @@
+period,controls,alpha_ann,alpha_t,beta[vix_level timing],n,beta[buy & hold (benchmark)],instrument,beta[futures_basis timing],beta[always short (benchmark)]
+OOS,vix_level timing,0.0166,0.7423,0.9195,1958,,SPY,,
+OOS,buy & hold (benchmark),-0.0439,-0.9646,,1958,0.4378,SPY,,
+OOS,ALL benchmarks,0.0203,0.8693,0.9387,1958,-0.0226,SPY,,
+full,ALL benchmarks,0.0221,1.4237,0.8088,5026,0.0222,SPY,,
+OOS,vix_level timing,0.2134,1.7181,0.7248,1959,,30d VIX futures,,
+OOS,futures_basis timing,0.1764,1.1972,,1959,,30d VIX futures,0.606,
+OOS,always short (benchmark),0.1036,0.5201,,1959,,30d VIX futures,,0.1687
+OOS,ALL benchmarks,0.2596,1.9169,0.8684,1959,,30d VIX futures,-0.092,-0.0913
+full,ALL benchmarks,0.2436,2.8984,0.8925,4261,,30d VIX futures,-0.2583,-0.0749

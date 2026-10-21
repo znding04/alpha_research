@@ -1,0 +1,15 @@
+strategy,period,ann_ret,ann_vol,sharpe,max_dd,n,instrument
+alpha_12 long/short (s=-1),IS,-0.757,0.4362,-2.9673,-1.0,748,delta-hedged straddles (15 names)
+alpha_12 long/short (s=-1),OOS,-0.7655,0.4064,-3.1968,-1.0,391,delta-hedged straddles (15 names)
+iv_level long/short (s=+1),IS,-0.8356,0.4398,-3.8026,-1.0,752,delta-hedged straddles (15 names)
+iv_level long/short (s=+1),OOS,-0.7952,0.3666,-4.023,-1.0,391,delta-hedged straddles (15 names)
+equal-weight short (benchmark),IS,-0.4232,0.7804,-0.0757,-0.9999,755,delta-hedged straddles (15 names)
+equal-weight short (benchmark),OOS,-0.5365,0.8503,-0.2457,-0.999,391,delta-hedged straddles (15 names)
+alpha_12 timing (s=-1),IS,-0.2572,0.5265,-0.1834,-0.9791,2302,30d VIX futures
+alpha_12 timing (s=-1),OOS,-0.1028,0.4948,0.0367,-0.8395,1959,30d VIX futures
+vix_level timing (s=-1),IS,-0.3123,0.5364,-0.2873,-0.9755,2302,30d VIX futures
+vix_level timing (s=-1),OOS,-0.1785,0.5209,-0.101,-0.9143,1959,30d VIX futures
+futures_basis timing (s=+1),IS,-0.4479,0.5493,-0.627,-0.9962,2302,30d VIX futures
+futures_basis timing (s=+1),OOS,-0.1322,0.5106,-0.0035,-0.8717,1959,30d VIX futures
+always short (benchmark),IS,-0.1151,0.7454,0.6998,-0.996,2504,30d VIX futures
+always short (benchmark),OOS,0.1234,0.7571,0.5614,-0.8738,1959,30d VIX futures

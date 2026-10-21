@@ -110,3 +110,17 @@ Signal: **SPX implied correlation (COR3M)** (`historical.py`). Hypothesized IC s
 **Interpretation:** Borderline. High implied correlation (COR3M) precedes higher index returns: +0.07 at 5d (t ≈ 2 for SPY/QQQ/IWM/DIA), +0.12 at 21d (t +1.9), +0.21 post-2019. Also predicts VIX falling (−0.25, t −4.0). Worth keeping; needs out-of-sample confirmation.
 
 ![cumulative IC](../figures/historical/alpha_07_iv_dispersion.png)
+
+## Tradability Validation (pre-registered 2026-10-20) — VERDICT: NOT a valid alpha (promising lead on VIX futures)
+
+Design in `validation.py` (written before any strategy numbers were computed), shared rule in `common/validation.py`, run with `python3 run_validation.py alpha_07`. Signal: COR3M at close t, unchanged. In-sample 2009–2018 picks only the direction; out-of-sample 2019–2026 judges, after costs, 1-day lag. Strategy w = s·(2·trailing-252d percentile − 1).
+
+| Test (OOS 2019–2026) | IC vs 5d fwd return | Alpha vs all benchmarks | Net return (Sharpe) | Result |
+|---|---|---|---|---|
+| **Primary: time SPY** (controls: buy & hold, VIX-level timing) | +0.112 (t +2.2), IS +0.107 | +2.0%/yr (t +0.9) | +2.3%/yr (0.22) vs buy & hold +17.1%/yr (0.92) | **FAIL** (ii) |
+| Secondary: time 30d VIX futures (controls: always short, VIX level, futures basis) | −0.157 (t −3.1), IS −0.145 | **+26.0%/yr (t +1.9)**; full sample t +2.9 | +4.0%/yr (0.34) vs always short +12.3%/yr (0.56) | fail (not scored) |
+
+**Reading:**
+1. **On SPY it is VIX-level timing.** The return IC is real and stable (IS and OOS both ≈ +0.11), but the timing strategy has beta 0.94 to "buy when VIX is high" and no residual alpha. A long/short timing rule also gives up the equity premium: +2%/yr vs +17%/yr buy & hold.
+2. **On VIX futures it is the strongest result in the repo.** High implied correlation predicts VIX futures falling (IC −0.16 OOS, same sign and size as IS), and the timing strategy beats the VIX-level and futures-basis strategies by +26%/yr (t +1.9 OOS, +2.9 over the full sample). Unlike alpha_03, it is **not** the futures basis in disguise (beta −0.09 to basis timing). It misses the t ≥ 2 bar narrowly, the strategy still has a −80% drawdown, and this was a secondary test, so it cannot be promoted after the fact.
+3. **Next step (new pre-registration, forward data only):** make "COR3M → short VIX futures" a primary test judged only on data after 2026-10-20 (paper-trade), or on an independent instrument (e.g. VSTOXX futures with the Euro Stoxx implied-correlation analogue). Re-scoring the same 2019–2026 window would be data snooping.

@@ -1,0 +1,23 @@
+signal,h,period,ic,t,n,instrument
+alpha_12,5,IS,-0.0355,-2.0414,400,delta-hedged straddles (15 names)
+alpha_12,5,OOS,-0.0638,-3.7294,391,delta-hedged straddles (15 names)
+iv_level,5,IS,0.036,2.1917,401,delta-hedged straddles (15 names)
+iv_level,5,OOS,0.0154,1.1659,391,delta-hedged straddles (15 names)
+alpha_12,1,IS,-0.0454,-2.2719,2502,30d VIX futures
+alpha_12,1,OOS,-0.0704,-3.1156,1957,30d VIX futures
+alpha_12,5,IS,-0.0991,-2.216,2502,30d VIX futures
+alpha_12,5,OOS,-0.0758,-1.4986,1953,30d VIX futures
+alpha_12,21,IS,-0.0367,-0.4005,2502,30d VIX futures
+alpha_12,21,OOS,-0.0447,-0.4296,1937,30d VIX futures
+vix_level,1,IS,-0.0775,-3.8761,2502,30d VIX futures
+vix_level,1,OOS,-0.1256,-5.5546,1957,30d VIX futures
+vix_level,5,IS,-0.1257,-2.8111,2502,30d VIX futures
+vix_level,5,OOS,-0.1608,-3.1787,1953,30d VIX futures
+vix_level,21,IS,-0.2169,-2.3675,2502,30d VIX futures
+vix_level,21,OOS,-0.271,-2.6023,1937,30d VIX futures
+futures_basis,1,IS,0.0241,1.2059,2502,30d VIX futures
+futures_basis,1,OOS,0.1257,5.5604,1957,30d VIX futures
+futures_basis,5,IS,0.0229,0.5121,2502,30d VIX futures
+futures_basis,5,OOS,0.1462,2.8886,1953,30d VIX futures
+futures_basis,21,IS,-0.0185,-0.2019,2502,30d VIX futures
+futures_basis,21,OOS,0.1989,1.9104,1937,30d VIX futures
