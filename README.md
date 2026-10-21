@@ -73,9 +73,10 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope | 🔄 Live needs snapshots | ❌ **−0.007** (t −0.1), SPY time-series | not yet tested | not tested (historical IC not significant) |
 | **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Tail butterfly convexity (10Δ/5Δ wings) at ~30 DTE | ✅ Snapshot OK (no DIA) | n/a — needs option-chain snapshots | n/a | n/a |
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
-| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
+|| **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
+|| **VRP Change** | `alpha_21_vrp/` | Day-over-day change in variance risk premium (IV² − RV²) | ✅ Snapshot OK; 🔄 needs 2+ days history for change | n/a — needs snapshots | n/a | n/a |
 
-**Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (= VRP term slope, alpha_06), `alpha_17_iv_calendar_spread` (= IV term slope, alpha_03), `alpha_18_vrp_momentum` (its "momentum" is near − mid VRP at one date, = VRP term slope, alpha_06), `alpha_21_iv_percentile` (copy of alpha_05), `alpha_22_iv_change` (5-day ATM IV change, = alpha_12). **2026-10-20:** `alpha_21_vrp` (IV² − RV², = alpha_04) and `alpha_22_iv_term_slope` (30d − 90d ATM IV, = alpha_03). Numbers are not reused.
+**Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (= VRP term slope, alpha_06), `alpha_17_iv_calendar_spread` (= IV term slope, alpha_03), `alpha_18_vrp_momentum` (its "momentum" is near − mid VRP at one date, = VRP term slope, alpha_06), `alpha_21_iv_percentile` (copy of alpha_05), `alpha_22_iv_change` (5-day ATM IV change, = alpha_12). **2026-10-20 (revision):** `alpha_21_vrp` (IV²−RV² change, now a new VRP-change signal with daily JSON tracking) and `alpha_22_iv_term_slope` (30d − 90d ATM IV, = alpha_03). Numbers are not reused. `alpha_21_vrp` is now active.
 
 ## Historical Analysis
 
