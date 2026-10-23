@@ -55,8 +55,8 @@ def compute_iv_rank(ticker_str):
         
         # Fix dtypes: both volume and openInterest are float64 with NaN (not int64)
         # Comparison works directly on float64 after fillna; avoid .astype(int) which fails on NaN/inf
-        df['volume'] = df['volume'].fillna(0)
-        df['openInterest'] = df['openInterest'].fillna(0)
+        df['volume'] = df['volume'].fillna(0).astype(float)
+        df['openInterest'] = df['openInterest'].fillna(0).astype(float)
         
         # Filter: liquid + valid IV + positive price + reasonable IV (not near-zero)
         df = df[
