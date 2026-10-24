@@ -75,9 +75,10 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Change** | `alpha_21_vrp/` | Day-over-day change in variance risk premium (IV² − RV²) | ✅ Snapshot OK; 🔄 needs 2+ days history for change | n/a — needs snapshots | n/a | n/a |
-|| **Put-Call Parity Residual** | `alpha_22_put_call_parity/` | Put-call parity residual (C−P vs S−Ke^{-(r−q)T}) using traded mid prices; captures borrow-cost / skew anomalies | ✅ Snapshot OK; 4 tickers (after-hours quote limits) | n/a — needs option-chain snapshots | n/a | n/a |
-
-**Removed duplicates (2026-10-18):** `alpha_10_vrp_carry` (= VRP term slope, alpha_06), `alpha_17_iv_calendar_spread` (= IV term slope, alpha_03), `alpha_18_vrp_momentum` (its "momentum" is near − mid VRP at one date, = VRP term slope, alpha_06), `alpha_21_iv_percentile` (copy of alpha_05), `alpha_22_iv_change` (5-day ATM IV change, = alpha_12). **2026-10-20 (revision):** `alpha_21_vrp` (IV²−RV² change, now a new VRP-change signal with daily JSON tracking) and `alpha_22_iv_term_slope` (30d − 90d ATM IV, = alpha_03). Numbers are not reused. `alpha_21_vrp` is now active.
+||| **Put-Call Parity Residual** | `alpha_22_put_call_parity/` | Put-call parity residual (C−P vs S−Ke^{-(r−q)T}) using traded mid prices; captures borrow-cost / skew anomalies | ✅ Snapshot OK; 4 tickers (after-hours quote limits) | n/a — needs option-chain snapshots | n/a | n/a |
+|| **VRP Refined** | `alpha_23_vrp/` | IV² − RV² with 30d RV, cross-section rank (live, 16 tickers); refined over alpha_04 | ✅ Snapshot OK (16 tickers, 2026-10-24) | n/a — needs 30+d daily snapshots for stable IC | not yet tested | not tested |
+|
+**Removed duplicates
 
 ## Historical Analysis
 
