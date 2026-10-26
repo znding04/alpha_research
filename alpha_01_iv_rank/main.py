@@ -53,10 +53,10 @@ def compute_iv_rank(ticker_str):
         chain = tq.option_chain(target_str)
         df = pd.concat([chain.calls, chain.puts], ignore_index=True)
         
-        # Fix dtypes: both volume and openInterest are float64 with NaN (not int64)
-        # Comparison works directly on float64 after fillna; avoid .astype(int) which fails on NaN/inf
-        df['volume'] = df['volume'].fillna(0).astype(float)
-        df['openInterest'] = df['openInterest'].fillna(0).astype(float)
+        # Fix dtypes: volume/OI are numpy int64, comparison fails on NaN/inf
+        # Fix: fillna(0) first, then .astype(int) for proper integer comparison
+        df['volume'] = df['volume'].fillna(0).astype(int)
+        df['openInterest'] = df['openInterest'].fillna(0).astype(int)
         
         # Filter: liquid + valid IV + positive price + reasonable IV (not near-zero)
         df = df[

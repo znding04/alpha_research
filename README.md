@@ -72,6 +72,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | **Put/Call OI-Weighted IV Spread** | `alpha_14_iv_smile_asymmetry/` | Volume/OI-weighted put-call IV spread & put/call ratios | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
 | **IV Term Structure Momentum** | `alpha_15_iv_term_momentum/` | Rate of change of IV term structure slope | 🔄 Live needs snapshots | ❌ **−0.007** (t −0.1), SPY time-series | not yet tested | not tested (historical IC not significant) |
 | **IV Skew Convexity** | `alpha_16_iv_skew_convexity/` | Tail butterfly convexity (10Δ/5Δ wings) at ~30 DTE | ✅ Snapshot OK (no DIA) | n/a — needs option-chain snapshots | n/a | n/a |
+| **IV Rank Percentile (Live Snapshot)** | `alpha_17_iv_rank_percentile/` | Current ATM IV percentile vs 1-year rolling realized vol proxy (yfinance); live main.py snapshot computation | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | not tested |
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Change** | `alpha_21_vrp/` | Day-over-day change in variance risk premium (IV² − RV²) | ✅ Snapshot OK; 🔄 needs 2+ days history for change | n/a — needs snapshots | n/a | n/a |
