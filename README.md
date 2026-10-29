@@ -79,7 +79,8 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 ||| **Put-Call Parity Residual** | `alpha_22_put_call_parity/` | Put-call parity residual (C−P vs S−Ke^{-(r−q)T}) using traded mid prices; captures borrow-cost / skew anomalies | ✅ Snapshot OK; 4 tickers (after-hours quote limits) | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Refined** | `alpha_23_vrp/` | IV² − RV² with 30d RV, cross-section rank (live, 16 tickers); refined over alpha_04 | ✅ Snapshot OK (16 tickers, 2026-10-24) | n/a — needs 30+d daily snapshots for stable IC | not yet tested | not tested |
 ||| **IV Skew Momentum Refined** | `alpha_24_iv_skew_momentum_refined/` | 5-day change in 25-delta put-call skew using Black-Scholes delta interpolation | ✅ Snapshot OK (13 tickers) | n/a — needs accumulated snapshots | n/a | n/a |
-||| **IV Skew-Term Structure** | `alpha_18_iv_skew_term_structure/` | Combined IV term structure slope + skew slope composite signal (mean reversion) | ✅ Snapshot OK (16 tickers, 2026-10-28) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|||| **IV Skew-Term Structure** | `alpha_18_iv_skew_term_structure/` | Combined IV term structure slope + skew slope composite signal (mean reversion) | ✅ Snapshot OK (16 tickers, 2026-10-28) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **IV Skew Dynamics (refined)** | `alpha_26_iv_skew_dynamics/` | 25Δ put-call skew term slope (OTM put vs OTM call IV at ~30d / ~75d) — live snapshot; preliminary single-day IC +0.436 (noise) | ✅ Snapshot OK (13 tickers, 2026-10-29) | n/a — needs accumulated snapshots | not yet tested (single-day 13-name cross-section, not valid) | not tested |
 
 **Removed duplicates
 
