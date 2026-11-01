@@ -83,8 +83,9 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 |||| **IV Skew-Term Structure** | `alpha_18_iv_skew_term_structure/` | Combined IV term structure slope + skew slope composite signal (mean reversion) | ✅ Snapshot OK (16 tickers, 2026-10-28) | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **IV Skew Dynamics (refined)** | `alpha_26_iv_skew_dynamics/` | 25Δ put-call skew term slope (OTM put vs OTM call IV at ~30d / ~75d) — live snapshot; preliminary single-day IC +0.436 (noise) | ✅ Snapshot OK (13 tickers, 2026-10-29) | n/a — needs accumulated snapshots | not yet tested (single-day 13-name cross-section, not valid) | not tested |
 || **IV Term Structure Slope (Refined)** | `alpha_27_iv_term_refined/` | ATM IV term structure slope normalized by near IV (near ~7 DTE, far ~49 DTE or farthest available) — cross-sectional mean-reversion stress signal | ✅ Snapshot OK (16 tickers, 2026-10-30) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **IV Skew-Term Structure Composite** | `alpha_29_iv_skew_term_structure/` | Combined IV skew + term structure slope interaction; negative = backwardation + steepening skew = stress | ✅ Snapshot OK (15 tickers, 2026-11-01) | n/a — needs accumulated snapshots | not yet tested | not tested |
 
-**Removed duplicates
+**Removed duplicates**
 
 ## Historical Analysis
 
