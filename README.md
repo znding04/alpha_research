@@ -163,3 +163,8 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 - All alphas must be tested against look-ahead bias
 - Use forward-looking returns only (no peeking into future bars)
 - Prefer daily resolution unless intraday alpha requires otherwise
+## New Signals Added (2026-11-03)
+- **IV Skew Dynamics** (): Put-call 25-delta IV skew change vs forward returns — lives at ; main + ic_analysis + notes.md complete.
+
+## New Signals Added (2026-11-03)
+- IV Skew Dynamics (alpha_31_iv_skew_dynamics/): Put-call 25-delta IV skew change vs forward returns — lives at data/iv_skew_dynamics_latest.csv; main + ic_analysis + notes.md complete.
