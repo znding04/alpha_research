@@ -84,8 +84,9 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 |||| **IV Skew-Term Structure** | `alpha_18_iv_skew_term_structure/` | Combined IV term structure slope + skew slope composite signal (mean reversion) | ✅ Snapshot OK (16 tickers, 2026-10-28) | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **IV Skew Dynamics (refined)** | `alpha_26_iv_skew_dynamics/` | 25Δ put-call skew term slope (OTM put vs OTM call IV at ~30d / ~75d) — live snapshot; preliminary single-day IC +0.436 (noise) | ✅ Snapshot OK (13 tickers, 2026-10-29) | n/a — needs accumulated snapshots | not yet tested (single-day 13-name cross-section, not valid) | not tested |
 || **IV Term Structure Slope (Refined)** | `alpha_27_iv_term_refined/` | ATM IV term structure slope normalized by near IV (near ~7 DTE, far ~49 DTE or farthest available) — cross-sectional mean-reversion stress signal | ✅ Snapshot OK (16 tickers, 2026-10-30) | n/a — needs accumulated snapshots | not yet tested | not tested |
-||| **IV Skew Dynamics** | `alpha_35_iv_skew_dynamics/` | Cross-sectional put-call IV skew (±2% moneyness, ~30 DTE) | ✅ Snapshot OK | n/a — needs accumulated snapshots | n/a | n/a |
-||| **IV Skew-Term Structure Composite** | `alpha_29_iv_skew_term_structure/` | Combined IV skew + term structure slope interaction; negative = backwardation + steepening skew = stress | ✅ Snapshot OK (15 tickers, 2026-11-01) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **IV Skew Dynamics** | `alpha_35_iv_skew_dynamics/` | Cross-sectional put-call IV skew (±2% moneyness, ~30 DTE) | ✅ Snapshot OK | n/a — needs accumulated snapshots | n/a | n/a |
+|| **IV Skew-Term Structure Composite** | `alpha_29_iv_skew_term_structure/` | Combined IV skew + term structure slope interaction; negative = backwardation + steepening skew = stress | ✅ Snapshot OK (15 tickers, 2026-11-01) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **VRP (EWMA-vol Forecast)** | `alpha_39_vrp_ewma/` | VRP = IV² − E[RV_ewma]² (RiskMetrics λ=0.94 EWMA vol forecast); ATM IV via BS inversion from chain mid prices | ✅ Snapshot OK (16 tickers, 2026-11-13) | n/a — forward returns not yet available for live signal | not yet tested | n/a |
 
 **Removed duplicates**
 
@@ -165,6 +166,10 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 - All alphas must be tested against look-ahead bias
 - Use forward-looking returns only (no peeking into future bars)
 - Prefer daily resolution unless intraday alpha requires otherwise
+
+## New Signals Added (2026-11-13)
+- **VRP with EWMA-vol Forecast** (alpha_39_vrp_ewma/): VRP = IV² − E[RV_ewma]², where E[RV_ewma] is the RiskMetrics λ=0.94 EWMA forecast of next ~30-day annualized realized vol. ATM IV recovered via Black-Scholes inversion from option-chain mid prices (yfinance `impliedVolatility` is unreliable on this day). Lives at data/vrp_ewma_latest.csv; main + ic_analysis + notes.md complete.
+
 ## New Signals Added (2026-11-12)
 - **VRP (Variance Risk Premium)** (alpha_38_vrp/): IV² − RV² variance risk premium — lives at data/vrp_latest.csv; main + ic_analysis + notes.md complete.
 
