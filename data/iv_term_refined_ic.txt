@@ -1,0 +1,5 @@
+IC Analysis — 2026-10-30
+IC (simulated): 0.36407282184728257
+Signal mean: 26.02%
+Signal std: 104.08%
+N tickers: 16
