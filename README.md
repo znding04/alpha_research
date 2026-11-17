@@ -88,6 +88,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **IV Skew-Term Structure Composite** | `alpha_29_iv_skew_term_structure/` | Combined IV skew + term structure slope interaction; negative = backwardation + steepening skew = stress | ✅ Snapshot OK (15 tickers, 2026-11-01) | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **VRP (EWMA-vol Forecast)** | `alpha_39_vrp_ewma/` | VRP = IV² − E[RV_ewma]² (RiskMetrics λ=0.94 EWMA vol forecast); ATM IV via BS inversion from chain mid prices | ✅ Snapshot OK (16 tickers, 2026-11-13) | n/a — forward returns not yet available for live signal | not yet tested | n/a |
 | **VRP Core** | `alpha_41_vrp_core/` | VRP = IV² − trailing 252d RV²; 16-ticker cross-section | ✅ Snapshot OK (16 tickers, 2026-11-14) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **VRP-Range (Parkinson RV)** | `alpha_44_vrp_range/` | VRP = IV² − Parkinson RV² (range-based realized vol, 60d window); Garman-Klass robustness; 6-name focus cross-section with vrp_rank | ✅ Snapshot OK (16 tickers, 2026-11-17) | n/a — needs accumulated snapshots | not yet tested | not tested |
 | **IV Skew Dynamics (25δ RR)** | `alpha_42_iv_skew_dynamics/` | 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), BS-delta solved; +5d change from persisted history | ✅ Snapshot OK (16 tickers, 2026-11-15) | n/a — forward returns not yet available for live signal | not yet tested | not tested |
 | **IV Rank Percentile (1Y Snapshot History)** | `alpha_43_iv_rank_percentile_1y/` | ATM IV percentile rank vs true 1-year range built from accumulated daily option-chain snapshots (`data/snapshots/`); high pctl = rich vol (mean-reversion bearish), low pctl = cheap vol | ✅ Snapshot OK (16 tickers, 2026-11-16; percentiles default 0.5 until snapshots accumulate) | n/a — needs ≥30 daily snapshots | not yet tested | not yet tested |
 
@@ -173,6 +174,10 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 ## New Signals Added (2026-11-15)
 
 - **IV Skew Dynamics (25-delta risk reversal)** (`alpha_42_iv_skew_dynamics/`): 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), with 25-delta strikes solved via Black-Scholes delta root-finding against chain-interpolated IV (moneyness fallback when solve fails). Tracks RR25 level cross-sectionally and 5-day change from persisted history (`data/iv_skew_dynamics_42_history.json`). Live snapshot → `data/iv_skew_dynamics_42_latest.csv`. main + ic_analysis + notes.md complete.
+
+## New Signals Added (2026-11-17)
+
+- **VRP-Range (Parkinson realized vol)** (`alpha_44_vrp_range/`): Variance Risk Premium with a range-based realized-vol benchmark instead of the usual close-to-close RV — `VRP_range = ATM_IV² − RV_parkinson²` over a 60d OHLC window, with Garman-Klass as a robustness check. Distinct from every prior VRP alpha (01/04/21/23/33/34/38/39/41), all of which use close-to-close RV; the range estimator is ~5x more efficient and robust to overnight gaps. Cross-sectional `vrp_rank` over the 6 focus names (AAPL, SPY, QQQ, MSFT, GOOGL, AMZN). Live snapshot → `data/vrp_range_latest.csv`; main + ic_analysis + notes.md complete.
 
 ## New Signals Added (2026-11-16)
 
