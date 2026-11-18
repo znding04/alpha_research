@@ -89,6 +89,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **VRP (EWMA-vol Forecast)** | `alpha_39_vrp_ewma/` | VRP = IV² − E[RV_ewma]² (RiskMetrics λ=0.94 EWMA vol forecast); ATM IV via BS inversion from chain mid prices | ✅ Snapshot OK (16 tickers, 2026-11-13) | n/a — forward returns not yet available for live signal | not yet tested | n/a |
 | **VRP Core** | `alpha_41_vrp_core/` | VRP = IV² − trailing 252d RV²; 16-ticker cross-section | ✅ Snapshot OK (16 tickers, 2026-11-14) | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **VRP-Range (Parkinson RV)** | `alpha_44_vrp_range/` | VRP = IV² − Parkinson RV² (range-based realized vol, 60d window); Garman-Klass robustness; 6-name focus cross-section with vrp_rank | ✅ Snapshot OK (16 tickers, 2026-11-17) | n/a — needs accumulated snapshots | not yet tested | not tested |
+|| **IV Term-Structure Convexity** | `alpha_45_iv_term_convexity/` | ATM IV term-structure butterfly curvature across ~14d/30d/75d tenors (`IV_mid − 0.5·(IV_short + IV_long)`, IV-normalized); captures humped vs trough curve shape that pure slope measures miss | ✅ Snapshot OK (16 tickers, 2026-11-18) | n/a — needs accumulated snapshots | not yet tested | not tested |
 | **IV Skew Dynamics (25δ RR)** | `alpha_42_iv_skew_dynamics/` | 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), BS-delta solved; +5d change from persisted history | ✅ Snapshot OK (16 tickers, 2026-11-15) | n/a — forward returns not yet available for live signal | not yet tested | not tested |
 | **IV Rank Percentile (1Y Snapshot History)** | `alpha_43_iv_rank_percentile_1y/` | ATM IV percentile rank vs true 1-year range built from accumulated daily option-chain snapshots (`data/snapshots/`); high pctl = rich vol (mean-reversion bearish), low pctl = cheap vol | ✅ Snapshot OK (16 tickers, 2026-11-16; percentiles default 0.5 until snapshots accumulate) | n/a — needs ≥30 daily snapshots | not yet tested | not yet tested |
 
@@ -174,6 +175,10 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 ## New Signals Added (2026-11-15)
 
 - **IV Skew Dynamics (25-delta risk reversal)** (`alpha_42_iv_skew_dynamics/`): 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), with 25-delta strikes solved via Black-Scholes delta root-finding against chain-interpolated IV (moneyness fallback when solve fails). Tracks RR25 level cross-sectionally and 5-day change from persisted history (`data/iv_skew_dynamics_42_history.json`). Live snapshot → `data/iv_skew_dynamics_42_latest.csv`. main + ic_analysis + notes.md complete.
+
+## New Signals Added (2026-11-18)
+
+- **IV Term-Structure Convexity** (`alpha_45_iv_term_convexity/`): ATM IV term-structure butterfly curvature — `curvature = IV_mid − 0.5·(IV_short + IV_long)` across ~14d/30d/75d tenors, normalized by `IV_mid` for cross-section comparability. Distinct from the pure-slope alphas (03/25/27/37) because it captures a humped/trough curve shape that slope alone cannot: positive curvature = rich mid-tenor belly (event risk priced into the belly), negative = cheap belly (smooth contango). Cross-sectional `curvature_rank` over the 6 focus names (AAPL, SPY, QQQ, MSFT, GOOGL, AMZN). Live snapshot → `data/iv_term_convexity_latest.csv`; main + ic_analysis + notes.md complete. Also regenerated `data/iv_rank_latest.csv` (alpha_01 int64 dtype fix already in place).
 
 ## New Signals Added (2026-11-17)
 
