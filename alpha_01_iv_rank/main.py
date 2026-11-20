@@ -45,7 +45,7 @@ def compute_iv_rank(ticker_str):
         
         # Use nearest meaningful expiration (skip DTE < 2)
         target_exp = min(
-            [e for e in valid_exps if e > datetime.now().replace(day=max(now.day, 2))],
+            [e for e in valid_exps if (e - now).days > 2],
             default=valid_exps[0]
         )
         target_str = target_exp.strftime("%Y-%m-%d")

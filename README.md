@@ -79,6 +79,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Change** | `alpha_21_vrp/` | Day-over-day change in variance risk premium (IV² − RV²) | ✅ Snapshot OK; 🔄 needs 2+ days history for change | n/a — needs snapshots | n/a | n/a |
 || **IV Skew Dynamics (25Δ RR v2)** | `alpha_46_iv_skew_dynamics/` | Cross-sectional 25Δ put-call skew rank (extreme put fear) vs cross-section | ✅ Live snapshot OK | ⚠️ needs ≥10 daily snapshots for stable IC | n/a — needs option-chain snapshots | n/a | n/a |
+|| **VRP (Variance Risk Premium) Cross-Sectional** | `alpha_47_vrp/` | VRP = IV² − RV² variance risk premium (cross-sectional rank across 6 focus names); ATM IV from nearest 14–60 DTE, 30d RV | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 
 ||| **Put-Call Parity Residual** | `alpha_22_put_call_parity/` | Put-call parity residual (C−P vs S−Ke^{-(r−q)T}) using traded mid prices; captures borrow-cost / skew anomalies | ✅ Snapshot OK; 4 tickers (after-hours quote limits) | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Refined** | `alpha_23_vrp/` | IV² − RV² with 30d RV, cross-section rank (live, 16 tickers); refined over alpha_04 | ✅ Snapshot OK (16 tickers, 2026-10-24) | n/a — needs 30+d daily snapshots for stable IC | not yet tested | not tested |
@@ -173,6 +174,10 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 - All alphas must be tested against look-ahead bias
 - Use forward-looking returns only (no peeking into future bars)
 - Prefer daily resolution unless intraday alpha requires otherwise
+
+## New Signals Added (2026-11-20)
+
+- **VRP Cross-Sectional (`alpha_47_vrp/`)**: Variance Risk Premium — ATM IV² − 30-day RV², cross-sectionally ranked across the 6 focus names (AAPL, SPY, QQQ, MSFT, GOOGL, AMZN). ATM IV from nearest liquid expiration in 14–60 DTE, volume-weighted across strikes within ±5% moneyness; RV from 30-day trailing log returns annualized with √252. Output → `data/vrp_latest.csv`. main + ic_analysis + notes.md complete.
 
 ## New Signals Added (2026-11-15)
 
