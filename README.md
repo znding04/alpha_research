@@ -78,6 +78,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | **IV Surface Skewness** | `alpha_19_iv_surface_skewness/` | 3rd/4th moments of IV smile across strikes | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Skew** | `alpha_20_vrp_skew/` | Put VRP minus Call VRP (IV²−RV² asymmetry) | ⚠️ IC script uses synthetic back-filled history | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP Change** | `alpha_21_vrp/` | Day-over-day change in variance risk premium (IV² − RV²) | ✅ Snapshot OK; 🔄 needs 2+ days history for change | n/a — needs snapshots | n/a | n/a |
+| **IV Term Structure Slope** | `alpha_48_iv_term_slope/` | Cross-sectional short vs long ATM IV slope (mean-reversion stress signal) | 🔄 Live needs snapshots | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **IV Skew Dynamics (25Δ RR v2)** | `alpha_46_iv_skew_dynamics/` | Cross-sectional 25Δ put-call skew rank (extreme put fear) vs cross-section | ✅ Live snapshot OK | ⚠️ needs ≥10 daily snapshots for stable IC | n/a — needs option-chain snapshots | n/a | n/a |
 || **VRP (Variance Risk Premium) Cross-Sectional** | `alpha_47_vrp/` | VRP = IV² − RV² variance risk premium (cross-sectional rank across 6 focus names); ATM IV from nearest 14–60 DTE, 30d RV | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 
