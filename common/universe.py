@@ -8,6 +8,9 @@ Historical universe = underlyings with a CBOE 30-day implied-vol index
 ETFS = ["SPY", "QQQ", "IWM", "DIA", "GLD", "SLV", "TLT", "EEM", "EWZ", "FXI", "GDX", "USO"]
 SINGLE_NAMES = ["AAPL", "MSFT", "GOOGL", "AMZN"]
 
+# 6 focus tickers for cross-sectional alpha signals
+FOCUS_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "SPY", "QQQ"]
+
 # Live snapshot universe used by every alpha_*/main.py
 TICKERS = ETFS + SINGLE_NAMES
 

@@ -212,3 +212,7 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 - **IV Skew Dynamics** (alpha_02_iv_skew_dynamics): Put-call 25-delta IV skew change vs forward returns — lives at data/iv_skew_dynamics_latest.csv; main + ic_analysis + notes.md complete.
 - IV Skew Dynamics (alpha_31_iv_skew_dynamics/): Put-call 25-delta IV skew change vs forward returns — lives at data/iv_skew_dynamics_latest.csv; main + ic_analysis + notes.md complete.
 - **VRP (Variance Risk Premium)** (alpha_36_vrp/): IV^2 − RV^2 variance risk premium — lives at data/vrp_latest.csv; main + ic_analysis + notes.md complete.
+
+## New Signals Added (2026-11-22)
+
+- **VRP Focus** (`alpha_49_vrp_focus/`): VRP = IV² − RV² variance risk premium, cross-sectional across 6 focus names (AAPL, MSFT, GOOGL, AMZN, SPY, QQQ); ATM IV from nearest 14–60 DTE, 30d realized vol from close-to-close returns; main + ic_analysis + notes.md complete.
