@@ -58,7 +58,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | Signal | Folder | Description | Live status | Historical IC (21d fwd return) | Delta-hedged IC | Tradability test |
 |---|---|---|---|---|---|---|
 | **IV Rank** | `alpha_01_iv_rank/` | ATM IV vs median IV spread across liquid contracts | ✅ Snapshot OK | n/a — needs option-chain snapshots | n/a | n/a |
-| **IV Rank Percentile (30d)** | `alpha_30_iv_rank_percentile/` | ATM IV percentile vs near-term option-chain range (30d) | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
+| **IV Rank Percentile** | `alpha_30_iv_rank_percentile/` | ATM IV percentile vs near-term option-chain range (30d) | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 | **IV Skew Dynamics** | `alpha_02_iv_skew_dynamics/` | 25-delta put-call skew (Black-Scholes delta) at ~30d / ~75d & skew term slope | ✅ Snapshot OK | ❌ **−0.020** (t −0.3), SPY time-series | not yet tested | not tested (historical IC not significant) |
 | **IV Skew Dynamics** | `alpha_28_iv_skew_dynamics/` | Cross-sectional 25d put-call IV skew across expirations; near-term skew vs forward returns | ✅ Snapshot OK | ❌ None (new signal) | not yet tested | n/a |
 | **IV Term Structure Slope (Refined)** | `alpha_27_iv_term_refined/` | ATM IV term structure slope normalized by near IV (near ~7 DTE, far ~49 DTE or farthest available) — cross-sectional mean-reversion stress signal | ✅ Snapshot OK (16 tickers, 2026-10-30) | n/a — needs accumulated snapshots | not yet tested | not tested |
@@ -95,7 +95,8 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **VRP-Range (Parkinson RV)** | `alpha_44_vrp_range/` | VRP = IV² − Parkinson RV² (range-based realized vol, 60d window); Garman-Klass robustness; 6-name focus cross-section with vrp_rank | ✅ Snapshot OK (16 tickers, 2026-11-17) | n/a — needs accumulated snapshots | not yet tested | not tested |
 || **IV Term-Structure Convexity** | `alpha_45_iv_term_convexity/` | ATM IV term-structure butterfly curvature across ~14d/30d/75d tenors (`IV_mid − 0.5·(IV_short + IV_long)`, IV-normalized); captures humped vs trough curve shape that pure slope measures miss | ✅ Snapshot OK (16 tickers, 2026-11-18) | n/a — needs accumulated snapshots | not yet tested | not tested |
 | **IV Skew Dynamics (25δ RR)** | `alpha_42_iv_skew_dynamics/` | 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), BS-delta solved; +5d change from persisted history | ✅ Snapshot OK (16 tickers, 2026-11-15) | n/a — forward returns not yet available for live signal | not yet tested | not tested |
-| **IV Rank Percentile (1Y Snapshot History)** | `alpha_43_iv_rank_percentile_1y/` | ATM IV percentile rank vs true 1-year range built from accumulated daily option-chain snapshots (`data/snapshots/`); high pctl = rich vol (mean-reversion bearish), low pctl = cheap vol | ✅ Snapshot OK (16 tickers, 2026-11-16; percentiles default 0.5 until snapshots accumulate) | n/a — needs ≥30 daily snapshots | not yet tested | not yet tested |
+|| **IV Rank Percentile (1Y Snapshot History)** | `alpha_43_iv_rank_percentile_1y/` | ATM IV percentile rank vs true 1-year range built from accumulated daily option-chain snapshots (`data/snapshots/`); high pctl = rich vol (mean-reversion bearish), low pctl = cheap vol | ✅ Snapshot OK (16 tickers, 2026-11-16; percentiles default 0.5 until snapshots accumulate) | n/a — needs ≥30 daily snapshots | not yet tested | not yet tested |
+|| **IV Rank Percentile** | `alpha_50_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 
 **Removed duplicates**
 
