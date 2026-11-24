@@ -217,3 +217,8 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 ## New Signals Added (2026-11-22)
 
 - **VRP Focus** (`alpha_49_vrp_focus/`): VRP = IV² − RV² variance risk premium, cross-sectional across 6 focus names (AAPL, MSFT, GOOGL, AMZN, SPY, QQQ); ATM IV from nearest 14–60 DTE, 30d realized vol from close-to-close returns; main + ic_analysis + notes.md complete.
+
+
+## New Signals Added (2026-11-24)
+
+- **IV Skew Dynamics (alpha_51)** (`alpha_51_iv_skew_tail/`): Cross-sectional 25-delta put-call risk reversal (RR25 = IV_put(25Δ) − IV_call(25Δ)) at ~30 DTE, solved via Black-Scholes delta root-finding against chain-interpolated IV. Positive RR25 = put skew richer than call skew (downside tail fear); cross-sectional rank over the 6 focus names. Live snapshot → `data/iv_skew_latest.csv`; main + ic_analysis + notes.md complete.
