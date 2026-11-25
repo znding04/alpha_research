@@ -97,6 +97,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 | **IV Skew Dynamics (25δ RR)** | `alpha_42_iv_skew_dynamics/` | 25-delta put-call risk reversal RR25 = IV_put(25Δ) − IV_call(25Δ), BS-delta solved; +5d change from persisted history | ✅ Snapshot OK (16 tickers, 2026-11-15) | n/a — forward returns not yet available for live signal | not yet tested | not tested |
 || **IV Rank Percentile (1Y Snapshot History)** | `alpha_43_iv_rank_percentile_1y/` | ATM IV percentile rank vs true 1-year range built from accumulated daily option-chain snapshots (`data/snapshots/`); high pctl = rich vol (mean-reversion bearish), low pctl = cheap vol | ✅ Snapshot OK (16 tickers, 2026-11-16; percentiles default 0.5 until snapshots accumulate) | n/a — needs ≥30 daily snapshots | not yet tested | not yet tested |
 || **IV Rank Percentile** | `alpha_50_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
+| **VRP (14–45 DTE, Close-to-Close RV)** | `alpha_52_vrp/` | VRP = IV² − RV²; ATM IV from 14–45 DTE narrow tenor window, 252d close-to-close RV with 60d min-period floor; 6-name focus cross-section | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 
 **Removed duplicates**
 
