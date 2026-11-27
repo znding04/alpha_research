@@ -99,6 +99,7 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **IV Rank Percentile** | `alpha_50_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 | **VRP (14–45 DTE, Close-to-Close RV)** | `alpha_52_vrp/` | VRP = IV² − RV²; ATM IV from 14–45 DTE narrow tenor window, 252d close-to-close RV with 60d min-period floor; 6-name focus cross-section | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 | **VRP (IV² − RV², 14–60 DTE)** | `alpha_53_vrp/` | VRP = IV² − RV² cross-sectionally ranked across 6 focus tickers; ATM IV from nearest liquid 14–60 DTE expiration, strict ±2% moneyness filter; 252d RV with 60d min-period floor; VRP + VRP_ratio reported | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
+| **IV Skew Dynamics** | `alpha_54_iv_skew_dynamics/` | Put-call IV skew at ~30 DTE using fixed moneyness (put ≈ 95% spot − call ≈ 105% spot), no BS delta solve; cross-sectional rank over 6 focus tickers + 5-day skew change (Δskew) from persisted history | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
 
 **Removed duplicates**
 
@@ -228,3 +229,7 @@ IC horizon: 5d forward return for timing tests, one 5-day period for cross-secti
 ## New Signals Added (2026-11-26)
 
 - **VRP (IV² − RV², 14–60 DTE)** (`alpha_53_vrp/`): Cross-sectional Variance Risk Premium across 6 focus tickers (AAPL, MSFT, GOOGL, AMZN, SPY, QQQ); ATM IV from nearest liquid 14–60 DTE expiration with strict ±2% moneyness and IV > 5% filter; 252d close-to-close RV with 60d min-period floor; reports VRP (variance units) and VRP_ratio (dimensionless). Live snapshot → `data/vrp53_latest.csv`; main + ic_analysis + notes.md complete.
+
+## New Signals Added (2026-11-27)
+
+- **IV Skew Dynamics (alpha_54)** (`alpha_54_iv_skew_dynamics/`): Put-call IV skew at ~30 DTE using fixed moneyness — `skew = IV(put ≈ 95% spot) − IV(call ≈ 105% spot)` — with no Black-Scholes delta root-finding (transparent, dependency-free, distinct from delta-solved RR25 alphas 02/42/51). Cross-sectional rank over the 6 focus tickers plus a 5-day skew *change* (Δskew) computed from persisted snapshots (`data/iv_skew_54_history.json`) once ≥2 days exist. Positive skew = downside tail fear; rising Δskew = fear building. Live snapshot → `data/iv_skew_54_latest.csv`; main + ic_analysis + notes.md complete. Also regenerated `data/iv_rank_latest.csv` (alpha_01 int64 dtype fix already in place).

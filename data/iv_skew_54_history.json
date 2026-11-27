@@ -1,0 +1,79 @@
+[
+  {
+    "date": "2026-11-27",
+    "signals": [
+      {
+        "ticker": "AAPL",
+        "current_price": 355.58,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 337.8,
+        "call_strike_target": 373.36,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      },
+      {
+        "ticker": "MSFT",
+        "current_price": 489.93,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 465.43,
+        "call_strike_target": 514.43,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      },
+      {
+        "ticker": "GOOGL",
+        "current_price": 273.1,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 259.44,
+        "call_strike_target": 286.76,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      },
+      {
+        "ticker": "AMZN",
+        "current_price": 244.43,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 232.21,
+        "call_strike_target": 256.65,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      },
+      {
+        "ticker": "SPY",
+        "current_price": 716.7,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 680.87,
+        "call_strike_target": 752.54,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      },
+      {
+        "ticker": "QQQ",
+        "current_price": 633.93,
+        "exp": "2026-12-24",
+        "dte": 27,
+        "put_strike_target": 602.23,
+        "call_strike_target": 665.63,
+        "put_iv": 0.0625,
+        "call_iv": 0.0625,
+        "skew": 0.0,
+        "skew_bps": 0.0
+      }
+    ]
+  }
+]
