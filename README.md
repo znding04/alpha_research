@@ -99,7 +99,8 @@ Status legend (2026-10-20). **Live status**: ✅ signal computes on today's chai
 || **IV Rank Percentile** | `alpha_50_iv_rank_percentile/` | Current ATM IV percentile vs 1-year historical range | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 | **VRP (14–45 DTE, Close-to-Close RV)** | `alpha_52_vrp/` | VRP = IV² − RV²; ATM IV from 14–45 DTE narrow tenor window, 252d close-to-close RV with 60d min-period floor; 6-name focus cross-section | ✅ Snapshot OK | n/a — needs accumulated snapshots | not yet tested | n/a |
 | **VRP (IV² − RV², 14–60 DTE)** | `alpha_53_vrp/` | VRP = IV² − RV² cross-sectionally ranked across 6 focus tickers; ATM IV from nearest liquid 14–60 DTE expiration, strict ±2% moneyness filter; 252d RV with 60d min-period floor; VRP + VRP_ratio reported | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
-| **IV Skew Dynamics** | `alpha_54_iv_skew_dynamics/` | Put-call IV skew at ~30 DTE using fixed moneyness (put ≈ 95% spot − call ≈ 105% spot), no BS delta solve; cross-sectional rank over 6 focus tickers + 5-day skew change (Δskew) from persisted history | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
+|| **IV Skew Dynamics** | `alpha_54_iv_skew_dynamics/` | Put-call IV skew at ~30 DTE using fixed moneyness (put ≈ 95% spot − call ≈ 105% spot), no BS delta solve; cross-sectional rank over 6 focus tickers + 5-day skew change (Δskew) from persisted history | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
+|| **VRP (14–60 DTE, 6‑focus ticker)** | `alpha_55_vrp_focus/` | VRP = IV² − RV² with ATM IV from 14–60 DTE ±2% moneyness, RV 252d with 60d floor, cross‑sectionally ranked over AAPL, MSFT, GOOGL, AMZN, SPY, QQQ | ✅ Snapshot OK (6 focus tickers) | n/a — needs accumulated snapshots | not yet tested | n/a |
 
 **Removed duplicates**
 
